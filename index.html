@@ -7,31 +7,31 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="alicia's notes">
-<meta name="theme-color" content="#fbf7f8" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#171516" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f7f6f2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#161616" media="(prefers-color-scheme: dark)">
 <title>alicia's notes</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ffcfe1'/%3E%3Cpath d='M18 22h28M18 32h28M18 42h16' stroke='%23161616' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23ffcfe1'/%3E%3Cpath d='M18 22h28M18 32h28M18 42h16' stroke='%23161616' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23e6e3dc'/%3E%3Cpath d='M18 22h28M18 32h28M18 42h16' stroke='%23161616' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23e6e3dc'/%3E%3Cpath d='M18 22h28M18 32h28M18 42h16' stroke='%23161616' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400;1,600&display=swap">
 <style>
 /* alicia's notes: folders | list | note. One pane at a time on the phone. */
 :root{
-  --bg:#fbf7f8; --side:#f5eef0; --paper:#fffdfd; --ink:#161616; --muted:#7a7073; --line:#ece2e5;
-  --hi:#ffcfe1; --hi-ink:#3a1022; --tag:#a8346a; --danger:#b3261e;
+  --bg:#f7f6f2; --side:#efede7; --paper:#fffefb; --ink:#161616; --muted:#77736a; --line:#e2dfd6;
+  --hi:#ffcfe1; --hi-ink:#3a1022; --grey:#e6e3dc; --tag:#c2457f; --danger:#b3261e;
   --mono:"IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --ui:-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root{
-  --bg:#171516; --side:#1d1a1b; --paper:#211e1f; --ink:#efe9eb; --muted:#a3989b; --line:#332d2f;
-  --hi:#ffcfe1; --hi-ink:#3a1022; --tag:#ff9cc4; --danger:#ff8a80; color-scheme:dark}}
+  --bg:#161616; --side:#1c1c1b; --paper:#1f1f1e; --ink:#ecebe6; --muted:#9a968c; --line:#2f2e2b;
+  --hi:#ffcfe1; --hi-ink:#3a1022; --grey:#2f2e2b; --tag:#ff9cc4; --danger:#ff8a80; color-scheme:dark}}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--ink);font:15px/1.45 var(--ui);overflow:hidden;
   padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer;background:none;border:0;padding:0}
-:focus-visible{outline:2px solid var(--tag);outline-offset:2px}
+:focus-visible{outline:2px solid var(--muted);outline-offset:2px}
 [hidden]{display:none!important}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 
@@ -39,7 +39,7 @@ button{cursor:pointer;background:none;border:0;padding:0}
 .gate{height:100%;overflow:auto;display:grid;place-items:center;padding:24px 16px}
 .card{width:min(420px,100%);display:grid;gap:14px}
 .logo{font:600 34px/1.1 var(--mono);letter-spacing:-.02em}
-.logo span{background:var(--hi);color:var(--hi-ink);padding:0 8px;border-radius:4px}
+.logo span{}
 .card p{margin:0;color:var(--muted)}
 .card form{display:grid;gap:10px}
 .field{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--paper)}
@@ -60,16 +60,16 @@ button{cursor:pointer;background:none;border:0;padding:0}
 .text{background:var(--paper)}
 .scroll{overflow:auto;min-height:0;flex:1}
 .brand{padding:16px 16px 4px;font:600 15px var(--mono)}
-.brand span{background:var(--hi);color:var(--hi-ink);padding:1px 6px;border-radius:4px}
+.brand span{}
 .label{display:flex;justify-content:space-between;align-items:center;padding:16px 16px 6px;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .label button{font-size:18px;line-height:1;width:24px;height:24px;border-radius:6px;color:var(--ink)}
 .nav{list-style:none;margin:0;padding:0 8px;display:grid;gap:2px}
 .nav button{display:flex;gap:9px;align-items:center;width:100%;text-align:left;padding:7px 10px;border-radius:8px;font-size:14px}
 .nav button:hover{background:color-mix(in srgb,var(--ink) 6%,transparent)}
-.nav button[aria-current="true"]{background:var(--sel,var(--hi));color:#1d1a1b}
+.nav button[aria-current="true"]{background:var(--grey);color:var(--ink)}
 .nav .lbl{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nav .n{font:12px var(--mono);opacity:.6}
-.nav .tagname{font-family:var(--mono);font-size:13px}
+.nav .tagname{font-family:var(--mono);font-size:13px;color:var(--tag)}
 .dot{width:11px;height:11px;border-radius:4px;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
 .newf{padding:2px 8px 6px} .newf input{width:100%;padding:7px 10px;border:1px solid var(--ink);border-radius:8px;background:var(--paper)}
 .foot{border-top:1px solid var(--line);padding:10px 16px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;font:12px var(--mono);color:var(--muted)}
@@ -85,7 +85,7 @@ button{cursor:pointer;background:none;border:0;padding:0}
 .icon{width:34px;height:34px;border-radius:8px;display:inline-grid;place-items:center;flex:none}
 .icon:hover{background:color-mix(in srgb,var(--ink) 7%,transparent)}
 .icon svg{width:19px;height:19px}
-.new{background:var(--hi);color:var(--hi-ink)} .new:hover{background:var(--hi);filter:brightness(.96)}
+.new{background:var(--grey);color:var(--ink)} .new:hover{background:var(--grey);filter:brightness(.95)}
 .ftools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--muted)}
 .ftools input{flex:1;min-width:0;padding:6px 10px;border:1px solid var(--ink);border-radius:8px;background:var(--paper)}
 .swatches{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
@@ -106,10 +106,10 @@ button{cursor:pointer;background:none;border:0;padding:0}
 .empty{padding:32px 16px;text-align:center;color:var(--muted);font-size:14px}
 
 .bar{display:flex;align-items:center;gap:6px;padding:8px 12px;border-bottom:1px solid var(--line);flex-wrap:wrap}
-.bar select{padding:6px 10px;border-radius:999px;border:0;background:var(--fc,var(--side));color:#2a2526;font:12px var(--mono);max-width:170px}
+.bar select{padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font:12px var(--mono);max-width:170px}
 .fmt{width:34px;height:34px;border-radius:8px;font:15px var(--mono)}
 .fmt:hover{background:color-mix(in srgb,var(--ink) 7%,transparent)}
-.fmt[aria-pressed="true"]{background:var(--hi);color:var(--hi-ink)}
+.fmt[aria-pressed="true"]{background:var(--grey);color:var(--ink)}
 .fmt.b{font-weight:600} .fmt.i{font-style:italic}
 .grow{flex:1}
 .confirm{display:flex;gap:10px;align-items:center;font-size:13px}
@@ -437,7 +437,7 @@ function shown(){
   }).sort((a,b)=>b.updatedAt-a.updatedAt);
 }
 function navItem(id,name,n,opt={}){
-  const btn=h("button",{"aria-current":String(S.sel===id),style:opt.color?"--sel:"+opt.color:null,onclick:()=>{S.sel=id;S.fedit=null;render();view("list")}},
+  const btn=h("button",{"aria-current":String(S.sel===id),onclick:()=>{S.sel=id;S.fedit=null;render();view("list")}},
     opt.color?h("span",{class:"dot",style:"background:"+opt.color}):null,h("span",{class:"lbl"+(opt.cls?" "+opt.cls:"")},name),h("span",{class:"n"},n));
   return h("li",{},btn);
 }
@@ -454,10 +454,10 @@ function render(){
   const list=shown();$("#list-count").textContent=list.length;
   tools();
   $("#notes").replaceChildren(...(list.length?list.map(n=>{
-    const tg=tagsOf(n).slice(0,3),f=folderOf(n.folder);
+    const tg=tagsOf(n).slice(0,3);
     return h("li",{},h("button",{class:"item","aria-current":String(S.open===n.id),onclick:()=>openNote(n.id)},
       h("span",{class:"t"},title(n)),snippet(n)?h("span",{class:"p"},snippet(n)):null,
-      h("span",{class:"m"},h("span",{},when(n.updatedAt)),f&&!S.sel.startsWith("f-")?h("span",{class:"chip",style:"background:"+f.color},f.name):null,...tg.map(t=>h("span",{class:"tg"},"#"+t)))));
+      h("span",{class:"m"},h("span",{},when(n.updatedAt)),...tg.map(t=>h("span",{class:"tg"},"#"+t)))));
   }):[h("li",{class:"empty"},S.q?"nothing found":"empty. press + to write")]));
 }
 function tools(){
@@ -510,7 +510,7 @@ function fill(){
   const html=clean(n.html);if(ed.innerHTML!==html)ed.innerHTML=html;
   const f=folderOf(n.folder),sel=$("#folder");
   sel.replaceChildren(h("option",{value:""},"no folder"),...S.book.folders.map(x=>h("option",{value:x.id},x.name)));
-  sel.value=f?n.folder:"";sel.style.setProperty("--fc",f?f.color:"");
+  sel.value=f?n.folder:"";
   edited(n);del();
 }
 function changed(n){n.updatedAt=Date.now();edited(n);dirty();render()}
