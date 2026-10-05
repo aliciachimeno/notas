@@ -71,6 +71,7 @@ button{cursor:pointer;background:none;border:0;padding:0}
 .newf{padding:2px 8px 6px} .newf input{width:100%;padding:7px 10px;border:1px solid var(--ink);border-radius:8px;background:var(--paper)}
 .foot{border-top:1px solid var(--line);padding:10px 16px;display:flex;justify-content:space-between;gap:8px;font:12px var(--mono);color:var(--muted)}
 .foot button{text-decoration:underline}
+.foot{flex-wrap:wrap} #sync{min-width:0;overflow-wrap:anywhere}
 
 .head{padding:12px 12px 10px;display:grid;gap:8px;border-bottom:1px solid var(--line)}
 .titlebar{display:flex;align-items:center;gap:6px;min-height:34px}
@@ -336,7 +337,11 @@ async function sync(){
   }catch(x){
     S.dirty=true;
     if(x.status===401)setSync("token expired · setup");
-    else{setSync("offline · saved here");clearTimeout(S.timer);S.timer=setTimeout(sync,20000)}
+    else if(x.status===403||x.status===404)setSync("GitHub "+x.status+": token can't write to "+CFG.repo+" · saved here");
+    else if(x.status)setSync("GitHub "+x.status+(x.detail?": "+x.detail:"")+" · saved here");
+    else if(!navigator.onLine)setSync("offline · saved here");
+    else setSync("can't reach GitHub ("+(x.message||"network error")+") · saved here");
+    if(x.status!==401&&x.status!==403&&x.status!==404){clearTimeout(S.timer);S.timer=setTimeout(sync,20000)}
   }finally{S.syncing=false;if(S.again){S.again=false;if(S.dirty)sync()}}
 }
 async function pull(force){
@@ -436,6 +441,14 @@ function del(){
   else z.replaceChildren(h("button",{class:"icon","aria-label":"Delete note",title:"Delete note",onclick:()=>{S.confirm=true;del()}},svgTrash()));
 }
 function svgTrash(){const N="http://www.w3.org/2000/svg",s=document.createElementNS(N,"svg");s.setAttribute("viewBox","0 0 24 24");s.setAttribute("fill","none");s.setAttribute("stroke","currentColor");s.setAttribute("stroke-width","2");s.setAttribute("stroke-linecap","round");s.setAttribute("stroke-linejoin","round");const p=document.createElementNS(N,"path");p.setAttribute("d","M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13");s.append(p);return s}
+
+/* Ctrl+S / Cmd+S: save now */
+document.addEventListener("keydown",e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="s"){
+    e.preventDefault();if(!S.key)return;
+    S.dirty=true;setSync("saving…");clearTimeout(S.timer);sync();
+  }
+});
 
 /* boot */
 if(!window.crypto||!crypto.subtle){gate(null,"This browser can't encrypt. Open notas over https in an up-to-date browser.");return}
