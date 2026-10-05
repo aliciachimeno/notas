@@ -6,40 +6,40 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="notas">
-<meta name="theme-color" content="#f7f6f2" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#161616" media="(prefers-color-scheme: dark)">
-<title>notas</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23111'/%3E%3Cpath d='M18 22h28M18 32h28M18 42h16' stroke='%23ffd23f' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23111'/%3E%3Cpath d='M18 22h28M18 32h28M18 42h16' stroke='%23ffd23f' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&display=swap">
+<meta name="apple-mobile-web-app-title" content="alicia's notes">
+<meta name="theme-color" content="#fbf7f8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#171516" media="(prefers-color-scheme: dark)">
+<title>alicia's notes</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ffcfe1'/%3E%3Cpath d='M18 22h28M18 32h28M18 42h16' stroke='%23161616' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23ffcfe1'/%3E%3Cpath d='M18 22h28M18 32h28M18 42h16' stroke='%23161616' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400;1,600&display=swap">
 <style>
-/* notas: folders | list | text. One pane at a time on the phone. Plain text, tags are #words. */
+/* alicia's notes: folders | list | note. One pane at a time on the phone. */
 :root{
-  --bg:#f7f6f2; --side:#efede7; --paper:#fffefb; --ink:#161616; --muted:#77736a; --line:#e2dfd6;
-  --hi:#ffd23f; --hi-ink:#161616; --tag:#7a5c00; --danger:#b3261e;
+  --bg:#fbf7f8; --side:#f5eef0; --paper:#fffdfd; --ink:#161616; --muted:#7a7073; --line:#ece2e5;
+  --hi:#ffcfe1; --hi-ink:#3a1022; --tag:#a8346a; --danger:#b3261e;
   --mono:"IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --ui:-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root{
-  --bg:#161616; --side:#1c1c1b; --paper:#1f1f1e; --ink:#ecebe6; --muted:#9a968c; --line:#2f2e2b;
-  --hi:#ffd23f; --hi-ink:#161616; --tag:#ffd23f; --danger:#ff8a80; color-scheme:dark}}
+  --bg:#171516; --side:#1d1a1b; --paper:#211e1f; --ink:#efe9eb; --muted:#a3989b; --line:#332d2f;
+  --hi:#ffcfe1; --hi-ink:#3a1022; --tag:#ff9cc4; --danger:#ff8a80; color-scheme:dark}}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--ink);font:15px/1.45 var(--ui);overflow:hidden;
   padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer;background:none;border:0;padding:0}
-:focus-visible{outline:2px solid var(--hi);outline-offset:2px}
+:focus-visible{outline:2px solid var(--tag);outline-offset:2px}
 [hidden]{display:none!important}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 
 /* gate */
 .gate{height:100%;overflow:auto;display:grid;place-items:center;padding:24px 16px}
 .card{width:min(420px,100%);display:grid;gap:14px}
-.logo{font:600 40px/1 var(--mono);letter-spacing:-.02em}
-.logo span{background:var(--hi);color:var(--hi-ink);padding:0 6px}
+.logo{font:600 34px/1.1 var(--mono);letter-spacing:-.02em}
+.logo span{background:var(--hi);color:var(--hi-ink);padding:0 8px;border-radius:4px}
 .card p{margin:0;color:var(--muted)}
 .card form{display:grid;gap:10px}
 .field{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--paper)}
@@ -53,25 +53,28 @@ button{cursor:pointer;background:none;border:0;padding:0}
 .link.danger{color:var(--danger)}
 
 /* app */
-.app{height:100%;display:grid;grid-template-columns:200px 290px minmax(0,1fr)}
+.app{height:100%;display:grid;grid-template-columns:210px 290px minmax(0,1fr)}
 .pane{min-width:0;min-height:0;display:flex;flex-direction:column}
 .side{background:var(--side);border-right:1px solid var(--line)}
 .list{background:var(--bg);border-right:1px solid var(--line)}
 .text{background:var(--paper)}
 .scroll{overflow:auto;min-height:0;flex:1}
+.brand{padding:16px 16px 4px;font:600 15px var(--mono)}
+.brand span{background:var(--hi);color:var(--hi-ink);padding:1px 6px;border-radius:4px}
 .label{display:flex;justify-content:space-between;align-items:center;padding:16px 16px 6px;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .label button{font-size:18px;line-height:1;width:24px;height:24px;border-radius:6px;color:var(--ink)}
-.nav{list-style:none;margin:0;padding:0 8px;display:grid;gap:1px}
-.nav button{display:flex;gap:8px;width:100%;text-align:left;padding:7px 10px;border-radius:8px;font-size:14px}
-.nav button:hover{background:color-mix(in srgb,var(--ink) 7%,transparent)}
-.nav button[aria-current="true"]{background:var(--hi);color:var(--hi-ink)}
+.nav{list-style:none;margin:0;padding:0 8px;display:grid;gap:2px}
+.nav button{display:flex;gap:9px;align-items:center;width:100%;text-align:left;padding:7px 10px;border-radius:8px;font-size:14px}
+.nav button:hover{background:color-mix(in srgb,var(--ink) 6%,transparent)}
+.nav button[aria-current="true"]{background:var(--sel,var(--hi));color:#1d1a1b}
 .nav .lbl{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nav .n{font:12px var(--mono);opacity:.6}
 .nav .tagname{font-family:var(--mono);font-size:13px}
+.dot{width:11px;height:11px;border-radius:4px;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
 .newf{padding:2px 8px 6px} .newf input{width:100%;padding:7px 10px;border:1px solid var(--ink);border-radius:8px;background:var(--paper)}
-.foot{border-top:1px solid var(--line);padding:10px 16px;display:flex;justify-content:space-between;gap:8px;font:12px var(--mono);color:var(--muted)}
+.foot{border-top:1px solid var(--line);padding:10px 16px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;font:12px var(--mono);color:var(--muted)}
 .foot button{text-decoration:underline}
-.foot{flex-wrap:wrap} #sync{min-width:0;overflow-wrap:anywhere}
+#sync{min-width:0;overflow-wrap:anywhere}
 
 .head{padding:12px 12px 10px;display:grid;gap:8px;border-bottom:1px solid var(--line)}
 .titlebar{display:flex;align-items:center;gap:6px;min-height:34px}
@@ -82,29 +85,42 @@ button{cursor:pointer;background:none;border:0;padding:0}
 .icon{width:34px;height:34px;border-radius:8px;display:inline-grid;place-items:center;flex:none}
 .icon:hover{background:color-mix(in srgb,var(--ink) 7%,transparent)}
 .icon svg{width:19px;height:19px}
-.new{background:var(--ink);color:var(--bg)} .new:hover{background:var(--ink);opacity:.85}
+.new{background:var(--hi);color:var(--hi-ink)} .new:hover{background:var(--hi);filter:brightness(.96)}
 .ftools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--muted)}
 .ftools input{flex:1;min-width:0;padding:6px 10px;border:1px solid var(--ink);border-radius:8px;background:var(--paper)}
+.swatches{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.swatches button{width:20px;height:20px;border-radius:6px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
+.swatches button[aria-pressed="true"]{outline:2px solid var(--ink);outline-offset:1px}
 
 .notes{list-style:none;margin:0;padding:4px 6px 24px}
-.item{display:grid;gap:2px;width:100%;text-align:left;padding:10px 12px;border-radius:10px;border-bottom:1px solid var(--line)}
+.item{display:grid;gap:3px;width:100%;text-align:left;padding:10px 12px;border-radius:10px;border-bottom:1px solid var(--line)}
 .item:hover{background:color-mix(in srgb,var(--ink) 4%,transparent)}
 .item[aria-current="true"]{background:var(--hi);color:var(--hi-ink);border-color:transparent}
 .item .t{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .item .p{font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .item[aria-current="true"] .p{color:inherit;opacity:.75}
-.item .m{display:flex;gap:8px;font:11px var(--mono);color:var(--muted);flex-wrap:wrap}
-.item[aria-current="true"] .m{color:inherit;opacity:.7}
+.item .m{display:flex;gap:8px;align-items:center;font:11px var(--mono);color:var(--muted);flex-wrap:wrap}
+.item[aria-current="true"] .m{color:inherit;opacity:.8}
 .item .tg{color:var(--tag)} .item[aria-current="true"] .tg{color:inherit}
+.chip{padding:1px 7px;border-radius:999px;color:#2a2526;font:11px var(--mono)}
 .empty{padding:32px 16px;text-align:center;color:var(--muted);font-size:14px}
 
 .bar{display:flex;align-items:center;gap:6px;padding:8px 12px;border-bottom:1px solid var(--line);flex-wrap:wrap}
-.bar select{padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper);font-size:13px;max-width:170px}
+.bar select{padding:6px 10px;border-radius:999px;border:0;background:var(--fc,var(--side));color:#2a2526;font:12px var(--mono);max-width:170px}
+.fmt{width:34px;height:34px;border-radius:8px;font:15px var(--mono)}
+.fmt:hover{background:color-mix(in srgb,var(--ink) 7%,transparent)}
+.fmt[aria-pressed="true"]{background:var(--hi);color:var(--hi-ink)}
+.fmt.b{font-weight:600} .fmt.i{font-style:italic}
 .grow{flex:1}
-.when{font:11px var(--mono);color:var(--muted)}
 .confirm{display:flex;gap:10px;align-items:center;font-size:13px}
-#body{flex:1;width:100%;border:0;outline:none;resize:none;background:transparent;padding:24px max(20px,calc((100% - 70ch)/2)) 120px;font:15px/1.75 var(--mono);tab-size:2}
-#body::placeholder{color:var(--muted)}
+.sheet{flex:1;overflow:auto;min-height:0}
+.page{max-width:70ch;margin:0 auto;padding:22px 24px 140px;display:grid;gap:6px}
+.edited{font:12px var(--mono);color:var(--muted)}
+#title{width:100%;border:0;outline:none;background:transparent;padding:4px 0 2px;font:600 17px/1.4 var(--mono)}
+#body{min-height:60vh;outline:none;font:15px/1.75 var(--mono);overflow-wrap:anywhere;white-space:pre-wrap}
+#body b,#body strong{font-weight:600}
+#body:empty::before{content:attr(data-ph);color:var(--muted);pointer-events:none}
+#title::placeholder{color:var(--muted)}
 .blank{flex:1;display:grid;place-items:center;color:var(--muted);font:14px var(--mono);text-align:center;padding:24px}
 .back{display:none}
 
@@ -114,7 +130,8 @@ button{cursor:pointer;background:none;border:0;padding:0}
   body.v-side .side, body.v-list .list, body.v-text .text{display:flex}
   .side,.list{border-right:0}
   .back{display:inline-grid}
-  #body{padding:16px 16px 120px;font-size:16px}
+  .page{padding:16px 16px 140px}
+  #title{font-size:18px} #body{font-size:16px}
 }
 </style>
 </head>
@@ -122,7 +139,7 @@ button{cursor:pointer;background:none;border:0;padding:0}
 
 <div class="gate" id="gate">
   <div class="card">
-    <div class="logo"><span>notas</span></div>
+    <div class="logo"><span>alicia's notes</span></div>
     <p id="gate-text">opening…</p>
     <form id="gate-form" hidden autocomplete="off">
       <div id="f-connect" hidden style="display:grid;gap:10px">
@@ -147,7 +164,8 @@ button{cursor:pointer;background:none;border:0;padding:0}
 <div class="app" id="app" hidden>
   <nav class="pane side" aria-label="Folders and tags">
     <div class="scroll">
-      <ul class="nav" style="padding-top:12px" id="nav-main"></ul>
+      <div class="brand"><span>alicia's notes</span></div>
+      <ul class="nav" style="padding-top:10px" id="nav-main"></ul>
       <div class="label">folders <button id="add-folder" aria-label="New folder" title="New folder">+</button></div>
       <div class="newf" id="newf" hidden><label class="sr" for="nf">Folder name</label><input id="nf" placeholder="folder name" maxlength="40"></div>
       <ul class="nav" id="nav-folders"></ul>
@@ -178,12 +196,19 @@ button{cursor:pointer;background:none;border:0;padding:0}
         <button class="icon back" id="back-list" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
         <label class="sr" for="folder">Folder</label>
         <select id="folder"></select>
+        <button class="fmt b" id="fmt-b" aria-label="Bold (Ctrl+B)" title="Bold (Ctrl+B)" aria-pressed="false">B</button>
+        <button class="fmt i" id="fmt-i" aria-label="Italic (Ctrl+I)" title="Italic (Ctrl+I)" aria-pressed="false">I</button>
         <span class="grow"></span>
-        <span class="when" id="when"></span>
         <span id="del"></span>
       </div>
-      <label class="sr" for="body">Note</label>
-      <textarea id="body" placeholder="first line is the title&#10;&#10;write anything. add #tags anywhere." spellcheck="true"></textarea>
+      <div class="sheet" id="sheet">
+        <div class="page">
+          <div class="edited" id="edited"></div>
+          <label class="sr" for="title">Title</label>
+          <input id="title" placeholder="title" maxlength="200" autocomplete="off">
+          <div id="body" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Note" data-ph="write anything. add #tags anywhere." spellcheck="true"></div>
+        </div>
+      </div>
     </div>
   </main>
 </div>
@@ -191,7 +216,9 @@ button{cursor:pointer;background:none;border:0;padding:0}
 <script>
 (() => {
 "use strict";
+/* storage names stay the same so existing notes keep working */
 const FILE="notas.json", CFG_KEY="notas.cfg", CACHE_KEY="notas.cache";
+const PASTELS=["#ffd6e7","#d6e9ff","#d7f2e1","#fff0c2","#e6dcff","#ffe0cc","#d3f1f1","#f2dcf2"];
 const $=s=>document.querySelector(s);
 const te=new TextEncoder(), td=new TextDecoder();
 let CFG=load(CFG_KEY);
@@ -201,14 +228,45 @@ const S={key:null,salt:null,check:null,book:null,sha:null,pending:null,remote:nu
 /* helpers */
 function load(k){try{return JSON.parse(localStorage.getItem(k))}catch{return null}}
 function store(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(k,JSON.stringify(v))}catch{}}
-function h(t,a,...k){const e=document.createElement(t);for(const[x,v]of Object.entries(a||{})){if(x==="class")e.className=v;else if(x.startsWith("on"))e.addEventListener(x.slice(2),v);else if(v===true)e.setAttribute(x,"");else if(v!==false&&v!=null)e.setAttribute(x,v)}for(const c of k.flat()){if(c==null||c===false)continue;e.append(c.nodeType?c:document.createTextNode(String(c)))}return e}
+function h(t,a,...k){const e=document.createElement(t);for(const[x,v]of Object.entries(a||{})){if(x==="class")e.className=v;else if(x==="style")e.setAttribute("style",v);else if(x.startsWith("on"))e.addEventListener(x.slice(2),v);else if(v===true)e.setAttribute(x,"");else if(v!==false&&v!=null)e.setAttribute(x,v)}for(const c of k.flat()){if(c==null||c===false)continue;e.append(c.nodeType?c:document.createTextNode(String(c)))}return e}
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 const uid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const tFmt=new Intl.DateTimeFormat(undefined,{hour:"2-digit",minute:"2-digit"});
 const dFmt=new Intl.DateTimeFormat(undefined,{day:"numeric",month:"short"});
+const fullFmt=new Intl.DateTimeFormat(undefined,{weekday:"long",day:"numeric",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit"});
 function when(t){const d=new Date(t),n=new Date();return d.toDateString()===n.toDateString()?tFmt.format(d):dFmt.format(d)}
-const title=n=>(n.body||"").trim().split("\n")[0].replace(/^#+\s*/,"").slice(0,80)||"new note";
-const snippet=n=>(n.body||"").trim().split("\n").slice(1).join(" ").replace(/\s+/g," ").slice(0,100);
-const tagsOf=n=>[...new Set(((n.body||"").match(/(^|\s)#([\p{L}\p{N}_-]+)/gu)||[]).map(x=>x.trim().slice(1).toLowerCase()))];
+const title=n=>(n.title||"").trim()||(n.body||"").trim().split("\n")[0].slice(0,80)||"new note";
+const snippet=n=>(n.title?(n.body||""):(n.body||"").split("\n").slice(1).join(" ")).replace(/\s+/g," ").trim().slice(0,100);
+const tagsOf=n=>[...new Set((((n.title||"")+" "+(n.body||"")).match(/(^|\s)#([\p{L}\p{N}_-]+)/gu)||[]).map(x=>x.trim().slice(1).toLowerCase()))];
+
+/* notes from the first version were plain text: first line becomes the title */
+function normalize(book){
+  for(const n of Object.values(book.notes||{})){
+    if(n.html===undefined){
+      const lines=(n.body||"").split("\n");
+      if(n.title===undefined){n.title=(lines.shift()||"").replace(/^#+\s*/,"");while(lines.length&&!lines[0].trim())lines.shift()}
+      n.body=lines.join("\n");n.html=esc(n.body).replace(/\n/g,"<br>");
+    }
+    if(n.title===undefined)n.title="";
+  }
+  (book.folders||[]).forEach((f,i)=>{if(!f.color)f.color=PASTELS[i%PASTELS.length]});
+  return book;
+}
+/* only bold, italic and line structure survive; everything else is unwrapped */
+const ALLOWED=new Set(["B","STRONG","I","EM","BR","DIV","P"]);
+function clean(html){
+  const t=document.createElement("template");t.innerHTML=html||"";
+  (function walk(node){
+    for(const c of [...node.childNodes]){
+      if(c.nodeType===1){
+        walk(c);
+        if(!ALLOWED.has(c.tagName)){c.replaceWith(...c.childNodes);continue}
+        for(const a of [...c.attributes])c.removeAttribute(a.name);
+      }else if(c.nodeType!==3)c.remove();
+    }
+  })(t.content);
+  return t.innerHTML;
+}
 
 /* crypto */
 function b64(buf){const b=new Uint8Array(buf);let s="";for(let i=0;i<b.length;i+=32768)s+=String.fromCharCode.apply(null,b.subarray(i,i+32768));return btoa(s)}
@@ -234,7 +292,7 @@ async function remoteLoad(){
   return{vault:JSON.parse(td.decode(unb64(c))),sha:j.sha};
 }
 async function remoteSave(vault,sha){
-  const body={message:"notas "+new Date().toISOString().slice(0,16).replace("T"," "),content:b64(te.encode(JSON.stringify(vault)))};
+  const body={message:"notes "+new Date().toISOString().slice(0,16).replace("T"," "),content:b64(te.encode(JSON.stringify(vault)))};
   if(sha)body.sha=sha;
   const r=await gh("/contents/"+FILE,{method:"PUT",body:JSON.stringify(body)});
   if(r.status===409||r.status===422){const e=new Error("conflict");e.conflict=true;throw e}
@@ -254,7 +312,7 @@ function gate(mode,text,error){
   if(mode)setTimeout(()=>(mode==="connect"?$("#c-token"):$("#pw1")).focus(),30);
 }
 $("#gate-alt").onclick=()=>{
-  if($("#gate-form").dataset.mode==="connect"){CFG=null;store(CFG_KEY,null);store(CACHE_KEY,null);gate("connect","This device is forgotten. Connect again to use notas here.")}
+  if($("#gate-form").dataset.mode==="connect"){CFG=null;store(CFG_KEY,null);store(CACHE_KEY,null);gate("connect","This device is forgotten. Connect again to use your notes here.")}
   else gate("connect","Your GitHub token and the private repo where notes are saved.");
 };
 $("#gate-form").addEventListener("submit",async e=>{
@@ -278,8 +336,9 @@ async function connect(){
   if(!r.ok){CFG=prev;fail("GitHub said "+r.status+". "+await detail(r))}
   const j=await r.json();
   if(!j.private){CFG=prev;fail(repo+" is public. Make it private first.")}
-  if(j.permissions&&!j.permissions.push){CFG=prev;fail("This token can't write to "+repo+". Give it Contents: read and write.")}
-  store(CFG_KEY,CFG);store(CACHE_KEY,null);await openVault();
+  store(CFG_KEY,CFG);
+  const old=load(CACHE_KEY);if(old&&!old.dirty)store(CACHE_KEY,null);
+  await openVault();
 }
 async function openVault(){
   let rem=null,offline=false;
@@ -300,7 +359,7 @@ async function setup(){
   if(pw!==$("#pw2").value)fail("The passwords don't match.");
   const salt=crypto.getRandomValues(new Uint8Array(16));
   S.key=await derive(pw,salt);S.salt=b64(salt);S.check=await seal({ok:"notas"});
-  S.book={folders:[{id:"f-ideas",name:"ideas"},{id:"f-personal",name:"personal"}],foldersAt:Date.now(),notes:{},deleted:{}};
+  S.book={folders:[{id:"f-ideas",name:"ideas",color:PASTELS[0]},{id:"f-personal",name:"personal",color:PASTELS[1]}],foldersAt:Date.now(),notes:{},deleted:{}};
   S.sha=null;start();dirty(0);
 }
 async function unlock(){
@@ -311,7 +370,7 @@ async function unlock(){
   let book=await unseal(v.data);const cache=load(CACHE_KEY);
   S.sha=S.remote?S.remote.sha:(cache&&cache.sha)||null;
   if(cache&&cache.dirty&&cache.vault&&cache.vault.salt===v.salt&&cache.vault!==v){try{book=merge(book,await unseal(cache.vault.data));S.dirty=true}catch{}}
-  S.book=book;start();if(S.dirty)dirty(0);else store(CACHE_KEY,{vault:v,sha:S.sha,dirty:false});
+  S.book=normalize(book);start();if(S.dirty)dirty(0);else store(CACHE_KEY,{vault:v,sha:S.sha,dirty:false});
 }
 
 /* sync */
@@ -320,7 +379,7 @@ function merge(a,b){
   for(const[k,t]of Object.entries(a.deleted||{}))o.deleted[k]=Math.max(t,o.deleted[k]||0);
   for(const src of[b,a])for(const n of Object.values(src.notes||{})){const c=o.notes[n.id];if(!c||n.updatedAt>c.updatedAt)o.notes[n.id]=n}
   for(const[id,t]of Object.entries(o.deleted))if(o.notes[id]&&o.notes[id].updatedAt<=t)delete o.notes[id];
-  return o;
+  return normalize(o);
 }
 async function vault(){return{v:1,salt:S.salt,check:S.check,data:await seal(S.book),at:Date.now()}}
 const setSync=t=>$("#sync").textContent=t;
@@ -349,7 +408,7 @@ async function pull(force){
   if(!force&&r.sha===S.sha)return;if(r.vault.salt!==S.salt)return;
   S.book=merge(S.book,await unseal(r.vault.data));S.sha=r.sha;
   if(!S.dirty)store(CACHE_KEY,{vault:r.vault,sha:r.sha,dirty:false});
-  render();if(S.open&&document.activeElement!==$("#body"))fill();if(S.open&&!S.book.notes[S.open])close();
+  render();if(S.open&&!$("#editor").contains(document.activeElement))fill();if(S.open&&!S.book.notes[S.open])close();
 }
 async function refresh(){if(!S.key||S.syncing)return;if(S.dirty){sync();return}try{await pull(false)}catch{}}
 window.addEventListener("focus",refresh);
@@ -366,75 +425,117 @@ $("#back-side").onclick=()=>view("side");
 $("#back-list").onclick=()=>{dropEmpty(S.open);view("list")};
 
 const all=()=>Object.values(S.book.notes);
-const fname=id=>(S.book.folders.find(f=>f.id===id)||{}).name;
+const folderOf=id=>S.book.folders.find(f=>f.id===id);
+const fname=id=>(folderOf(id)||{}).name;
 function shown(){
   const q=S.q.trim().toLowerCase();
   return all().filter(n=>{
     if(S.sel.startsWith("#")){if(!tagsOf(n).includes(S.sel.slice(1)))return false}
     else if(S.sel==="loose"){if(fname(n.folder))return false}
     else if(S.sel!=="all"&&n.folder!==S.sel)return false;
-    return!q||(n.body||"").toLowerCase().includes(q);
+    return!q||((n.title||"")+" "+(n.body||"")).toLowerCase().includes(q);
   }).sort((a,b)=>b.updatedAt-a.updatedAt);
 }
-function navItem(id,name,n,cls){return h("li",{},h("button",{"aria-current":String(S.sel===id),onclick:()=>{S.sel=id;S.fedit=null;render();view("list")}},h("span",{class:"lbl"+(cls?" "+cls:"")},name),h("span",{class:"n"},n)))}
+function navItem(id,name,n,opt={}){
+  const btn=h("button",{"aria-current":String(S.sel===id),style:opt.color?"--sel:"+opt.color:null,onclick:()=>{S.sel=id;S.fedit=null;render();view("list")}},
+    opt.color?h("span",{class:"dot",style:"background:"+opt.color}):null,h("span",{class:"lbl"+(opt.cls?" "+opt.cls:"")},name),h("span",{class:"n"},n));
+  return h("li",{},btn);
+}
 function render(){
   if(!S.book)return;const ns=all();
   const main=[navItem("all","all notes",ns.length)];const loose=ns.filter(n=>!fname(n.folder)).length;if(loose)main.push(navItem("loose","no folder",loose));
   $("#nav-main").replaceChildren(...main);
-  $("#nav-folders").replaceChildren(...S.book.folders.map(f=>navItem(f.id,f.name,ns.filter(n=>n.folder===f.id).length)));
+  $("#nav-folders").replaceChildren(...S.book.folders.map(f=>navItem(f.id,f.name,ns.filter(n=>n.folder===f.id).length,{color:f.color})));
   const tc={};for(const n of ns)for(const t of tagsOf(n))tc[t]=(tc[t]||0)+1;
   const tags=Object.keys(tc).sort();
-  $("#nav-tags").replaceChildren(...(tags.length?tags.map(t=>navItem("#"+t,"#"+t,tc[t],"tagname")):[h("li",{class:"small",style:"padding:4px 18px"},"type #something in a note")]));
+  $("#nav-tags").replaceChildren(...(tags.length?tags.map(t=>navItem("#"+t,"#"+t,tc[t],{cls:"tagname"})):[h("li",{class:"small",style:"padding:4px 18px"},"type #something in a note")]));
   if(S.sel.startsWith("#")&&!tc[S.sel.slice(1)])S.sel="all";
   $("#list-name").textContent=S.sel==="all"?"all notes":S.sel==="loose"?"no folder":S.sel.startsWith("#")?S.sel:(fname(S.sel)||"folder");
   const list=shown();$("#list-count").textContent=list.length;
   tools();
   $("#notes").replaceChildren(...(list.length?list.map(n=>{
-    const tg=tagsOf(n).slice(0,3);
+    const tg=tagsOf(n).slice(0,3),f=folderOf(n.folder);
     return h("li",{},h("button",{class:"item","aria-current":String(S.open===n.id),onclick:()=>openNote(n.id)},
       h("span",{class:"t"},title(n)),snippet(n)?h("span",{class:"p"},snippet(n)):null,
-      h("span",{class:"m"},h("span",{},when(n.updatedAt)),S.sel==="all"&&fname(n.folder)?h("span",{},fname(n.folder)):null,...tg.map(t=>h("span",{class:"tg"},"#"+t)))));
+      h("span",{class:"m"},h("span",{},when(n.updatedAt)),f&&!S.sel.startsWith("f-")?h("span",{class:"chip",style:"background:"+f.color},f.name):null,...tg.map(t=>h("span",{class:"tg"},"#"+t)))));
   }):[h("li",{class:"empty"},S.q?"nothing found":"empty. press + to write")]));
 }
 function tools(){
-  const box=$("#ftools"),f=S.book.folders.find(x=>x.id===S.sel);
+  const box=$("#ftools"),f=folderOf(S.sel);
   if(!f){box.hidden=true;box.replaceChildren();return}box.hidden=false;
   if(S.fedit==="rename"){
     const i=h("input",{id:"rn",value:f.name,maxlength:"40","aria-label":"Folder name"});
     const done=ok=>{const v=i.value.trim();S.fedit=null;if(ok&&v&&v!==f.name){f.name=v;S.book.foldersAt=Date.now();dirty()}render()};
     i.addEventListener("keydown",e=>{if(e.key==="Enter")done(true);if(e.key==="Escape")done(false)});
     box.replaceChildren(i,h("button",{class:"link",onclick:()=>done(true)},"save"));setTimeout(()=>{i.focus();i.select()},0);
+  }else if(S.fedit==="color"){
+    box.replaceChildren(h("span",{class:"swatches"},...PASTELS.map(c=>h("button",{style:"background:"+c,"aria-label":"Folder color "+c,"aria-pressed":String(f.color===c),onclick:()=>{f.color=c;S.book.foldersAt=Date.now();S.fedit=null;dirty();render();if(S.open)fill()}}))),
+      h("button",{class:"link",onclick:()=>{S.fedit=null;tools()}},"done"));
   }else if(S.fedit==="delete"){
     box.replaceChildren(h("span",{},"delete folder? notes move to “no folder”"),
       h("button",{class:"link danger",onclick:()=>{S.book.folders=S.book.folders.filter(x=>x.id!==f.id);S.book.foldersAt=Date.now();
         for(const n of all())if(n.folder===f.id){n.folder="";n.updatedAt=Date.now()}S.sel="all";S.fedit=null;dirty();render();if(S.open)fill()}},"delete"),
       h("button",{class:"link",onclick:()=>{S.fedit=null;tools()}},"cancel"));
-  }else box.replaceChildren(h("button",{class:"link",onclick:()=>{S.fedit="rename";tools()}},"rename"),h("button",{class:"link danger",onclick:()=>{S.fedit="delete";tools()}},"delete folder"));
+  }else box.replaceChildren(
+    h("button",{class:"link",onclick:()=>{S.fedit="rename";tools()}},"rename"),
+    h("button",{class:"link",onclick:()=>{S.fedit="color";tools()}},"color"),
+    h("button",{class:"link danger",onclick:()=>{S.fedit="delete";tools()}},"delete folder"));
 }
 $("#add-folder").onclick=()=>{const b=$("#newf");b.hidden=!b.hidden;if(!b.hidden){$("#nf").value="";$("#nf").focus()}};
 $("#nf").addEventListener("keydown",e=>{
   if(e.key==="Escape"){$("#newf").hidden=true;return}if(e.key!=="Enter")return;
-  const v=e.target.value.trim();if(!v)return;const f={id:uid("f-"),name:v};
+  const v=e.target.value.trim();if(!v)return;
+  const used=new Set(S.book.folders.map(f=>f.color));
+  const color=PASTELS.find(c=>!used.has(c))||PASTELS[S.book.folders.length%PASTELS.length];
+  const f={id:uid("f-"),name:v,color};
   S.book.folders.push(f);S.book.foldersAt=Date.now();$("#newf").hidden=true;S.sel=f.id;dirty();render();
 });
 $("#q").addEventListener("input",e=>{S.q=e.target.value;render()});
 
 /* notes */
+const ed=$("#body"), ti=$("#title");
+try{document.execCommand("defaultParagraphSeparator",false,"div");document.execCommand("styleWithCSS",false,false)}catch{}
 $("#new").onclick=()=>{
-  const t=Date.now(),n={id:uid("n"),body:S.sel.startsWith("#")?"\n\n"+S.sel:"",folder:S.book.folders.some(f=>f.id===S.sel)?S.sel:"",createdAt:t,updatedAt:t};
-  S.book.notes[n.id]=n;S.q="";$("#q").value="";openNote(n.id);$("#body").focus();$("#body").setSelectionRange(0,0);
+  const t=Date.now(),tag=S.sel.startsWith("#")?S.sel:"";
+  const n={id:uid("n"),title:"",body:tag,html:esc(tag),folder:folderOf(S.sel)?S.sel:"",createdAt:t,updatedAt:t};
+  S.book.notes[n.id]=n;S.q="";$("#q").value="";openNote(n.id);ti.focus();
 };
-function openNote(id){if(S.open&&S.open!==id)dropEmpty(S.open);S.open=id;S.confirm=false;$("#blank").hidden=true;$("#editor").hidden=false;fill();render();view("text")}
+function openNote(id){if(S.open&&S.open!==id)dropEmpty(S.open);S.open=id;S.confirm=false;$("#blank").hidden=true;$("#editor").hidden=false;fill();render();view("text");$("#sheet").scrollTop=0}
 function close(){S.open=null;$("#editor").hidden=true;$("#blank").hidden=false}
-function dropEmpty(id){const n=id&&S.book&&S.book.notes[id];if(n&&!(n.body||"").replace(/#\S+/g,"").trim()){delete S.book.notes[id];if(S.open===id)close();render()}}
+function dropEmpty(id){const n=id&&S.book&&S.book.notes[id];if(n&&!(n.title||"").trim()&&!(n.body||"").replace(/#\S+/g,"").trim()){delete S.book.notes[id];if(S.open===id)close();render()}}
+function edited(n){$("#edited").textContent="last edited "+fullFmt.format(new Date(n.updatedAt))}
 function fill(){
   const n=S.book.notes[S.open];if(!n){close();return}
-  if($("#body").value!==n.body)$("#body").value=n.body;
-  $("#folder").replaceChildren(h("option",{value:""},"no folder"),...S.book.folders.map(f=>h("option",{value:f.id},f.name)));
-  $("#folder").value=fname(n.folder)?n.folder:"";$("#when").textContent=when(n.updatedAt);del();
+  if(ti.value!==(n.title||""))ti.value=n.title||"";
+  const html=clean(n.html);if(ed.innerHTML!==html)ed.innerHTML=html;
+  const f=folderOf(n.folder),sel=$("#folder");
+  sel.replaceChildren(h("option",{value:""},"no folder"),...S.book.folders.map(x=>h("option",{value:x.id},x.name)));
+  sel.value=f?n.folder:"";sel.style.setProperty("--fc",f?f.color:"");
+  edited(n);del();
 }
-$("#body").addEventListener("input",e=>{const n=S.book.notes[S.open];if(!n)return;n.body=e.target.value;n.updatedAt=Date.now();$("#when").textContent=when(n.updatedAt);dirty();render()});
-$("#folder").addEventListener("change",e=>{const n=S.book.notes[S.open];n.folder=e.target.value;n.updatedAt=Date.now();dirty();render()});
+function changed(n){n.updatedAt=Date.now();edited(n);dirty();render()}
+ti.addEventListener("input",()=>{const n=S.book.notes[S.open];if(!n)return;n.title=ti.value;changed(n)});
+ti.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();ed.focus()}});
+ed.addEventListener("input",()=>{
+  const n=S.book.notes[S.open];if(!n)return;
+  if(ed.innerHTML==="<br>"||ed.innerHTML==="<div><br></div>")ed.innerHTML="";
+  n.html=ed.innerHTML;n.body=ed.innerText.replace(/\n{3,}/g,"\n\n");changed(n);
+});
+/* paste as plain text so outside formatting doesn't sneak in */
+ed.addEventListener("paste",e=>{e.preventDefault();const t=(e.clipboardData||window.clipboardData).getData("text/plain");document.execCommand("insertText",false,t)});
+$("#folder").addEventListener("change",e=>{const n=S.book.notes[S.open];n.folder=e.target.value;changed(n);fill()});
+
+/* bold / italic */
+function fmt(cmd){ed.focus();document.execCommand(cmd,false,null);ed.dispatchEvent(new Event("input"));states()}
+for(const[id,cmd]of[["#fmt-b","bold"],["#fmt-i","italic"]]){
+  const b=$(id);b.addEventListener("mousedown",e=>e.preventDefault());b.addEventListener("click",()=>fmt(cmd));
+}
+function states(){
+  if(!ed.contains(document.getSelection().anchorNode))return;
+  try{$("#fmt-b").setAttribute("aria-pressed",String(document.queryCommandState("bold")));$("#fmt-i").setAttribute("aria-pressed",String(document.queryCommandState("italic")))}catch{}
+}
+document.addEventListener("selectionchange",states);
+
 function del(){
   const z=$("#del");
   if(S.confirm)z.replaceChildren(h("span",{class:"confirm"},"delete?",h("button",{class:"link danger",onclick:()=>{delete S.book.notes[S.open];S.book.deleted[S.open]=Date.now();dirty(0);close();view("list");render()}},"yes"),h("button",{class:"link",onclick:()=>{S.confirm=false;del()}},"no")));
@@ -451,7 +552,7 @@ document.addEventListener("keydown",e=>{
 });
 
 /* boot */
-if(!window.crypto||!crypto.subtle){gate(null,"This browser can't encrypt. Open notas over https in an up-to-date browser.");return}
+if(!window.crypto||!crypto.subtle){gate(null,"This browser can't encrypt. Open alicia's notes over https in an up-to-date browser.");return}
 if(!CFG)gate("connect","Connect this device once. After that you only need your password.");else openVault();
 })();
 </script>
