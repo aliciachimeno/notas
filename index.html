@@ -69,6 +69,8 @@ button{cursor:pointer;background:none;border:0;padding:0}
 .nav button[aria-current="true"]{background:var(--sel,var(--hi));color:#1d1a1b}
 .nav .lbl{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nav .n{font:12px var(--mono);opacity:.6}
+.nav .tw{width:14px;flex:none;font-size:10px;line-height:1;color:var(--muted);text-align:center}
+.nav .tw:hover{color:var(--ink)}
 .nav .tagname{font-family:var(--mono);font-size:13px}
 .dot{width:11px;height:11px;border-radius:4px;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
 .newf{padding:2px 8px 6px} .newf input{width:100%;padding:7px 10px;border:1px solid var(--ink);border-radius:8px;background:var(--paper)}
@@ -223,7 +225,7 @@ const $=s=>document.querySelector(s);
 const te=new TextEncoder(), td=new TextDecoder();
 let CFG=load(CFG_KEY);
 const S={key:null,salt:null,check:null,book:null,sha:null,pending:null,remote:null,
-  sel:"all",open:null,q:"",dirty:false,syncing:false,again:false,timer:null,confirm:false,fedit:null};
+  sel:"all",open:null,q:"",dirty:false,syncing:false,again:false,timer:null,confirm:false,fedit:null,collapsed:new Set(load("notas.collapsed")||[])};
 
 /* helpers */
 function load(k){try{return JSON.parse(localStorage.getItem(k))}catch{return null}}
@@ -249,7 +251,7 @@ function normalize(book){
     }
     if(n.title===undefined)n.title="";
   }
-  (book.folders||[]).forEach((f,i)=>{if(!f.color)f.color=PASTELS[i%PASTELS.length]});
+  (book.folders||[]).forEach((f,i)=>{if(!f.color)f.color=PASTELS[i%PASTELS.length];if(f.parent===undefined)f.parent=""});
   return book;
 }
 /* only bold, italic and line structure survive; everything else is unwrapped */
@@ -427,6 +429,15 @@ $("#back-list").onclick=()=>{dropEmpty(S.open);view("list")};
 const all=()=>Object.values(S.book.notes);
 const folderOf=id=>S.book.folders.find(f=>f.id===id);
 const fname=id=>(folderOf(id)||{}).name;
+const kids=id=>S.book.folders.filter(f=>(f.parent||"")===id&&f.id!==id);
+/* folders in tree order with their depth; guards against loops */
+function tree(){
+  const out=[],seen=new Set();
+  const ids=new Set(S.book.folders.map(f=>f.id));
+  (function walk(pid,d){for(const f of S.book.folders.filter(x=>(x.parent&&ids.has(x.parent)?x.parent:"")===pid)){if(seen.has(f.id))continue;seen.add(f.id);out.push({f,d});walk(f.id,d+1)}})("",0);
+  return out;
+}
+function descendants(id){const out=[];const st=[id];while(st.length){const p=st.pop();for(const k of kids(p)){if(out.includes(k.id))continue;out.push(k.id);st.push(k.id)}}return out}
 function shown(){
   const q=S.q.trim().toLowerCase();
   return all().filter(n=>{
@@ -437,20 +448,29 @@ function shown(){
   }).sort((a,b)=>b.updatedAt-a.updatedAt);
 }
 function navItem(id,name,n,opt={}){
-  const btn=h("button",{"aria-current":String(S.sel===id),style:opt.color?"--sel:"+opt.color:null,onclick:()=>{S.sel=id;S.fedit=null;render();view("list")}},
-    opt.color?h("span",{class:"dot",style:"background:"+opt.color}):null,h("span",{class:"lbl"+(opt.cls?" "+opt.cls:"")},name),h("span",{class:"n"},n));
+  const style=[opt.color?"--sel:"+opt.color:"",opt.depth?"padding-left:"+(10+opt.depth*16)+"px":""].filter(Boolean).join(";")||null;
+  const tw=opt.folder?(opt.hasKids?h("span",{class:"tw",role:"button","aria-label":(S.collapsed.has(id)?"Open ":"Close ")+name,onclick:e=>{e.stopPropagation();S.collapsed.has(id)?S.collapsed.delete(id):S.collapsed.add(id);store("notas.collapsed",[...S.collapsed]);render()}},S.collapsed.has(id)?"▸":"▾"):h("span",{class:"tw"})):null;
+  const btn=h("button",{"aria-current":String(S.sel===id),style,onclick:()=>{S.sel=id;S.fedit=null;render();view("list")}},
+    tw,opt.color?h("span",{class:"dot",style:"background:"+opt.color}):null,h("span",{class:"lbl"+(opt.cls?" "+opt.cls:"")},name),h("span",{class:"n"},n));
   return h("li",{},btn);
 }
 function render(){
   if(!S.book)return;const ns=all();
   const main=[navItem("all","all notes",ns.length)];const loose=ns.filter(n=>!fname(n.folder)).length;if(loose)main.push(navItem("loose","no folder",loose));
   $("#nav-main").replaceChildren(...main);
-  $("#nav-folders").replaceChildren(...S.book.folders.map(f=>navItem(f.id,f.name,ns.filter(n=>n.folder===f.id).length,{color:f.color})));
+  const rows=[];let hideBelow=null;
+  for(const{f,d}of tree()){
+    if(hideBelow!==null&&d>hideBelow)continue;hideBelow=null;
+    const k=kids(f.id).length>0;
+    rows.push(navItem(f.id,f.name,ns.filter(n=>n.folder===f.id).length,{color:f.color,depth:d,folder:true,hasKids:k}));
+    if(k&&S.collapsed.has(f.id))hideBelow=d;
+  }
+  $("#nav-folders").replaceChildren(...rows);
   const tc={};for(const n of ns)for(const t of tagsOf(n))tc[t]=(tc[t]||0)+1;
   const tags=Object.keys(tc).sort();
   $("#nav-tags").replaceChildren(...(tags.length?tags.map(t=>navItem("#"+t,"#"+t,tc[t],{cls:"tagname"})):[h("li",{class:"small",style:"padding:4px 18px"},"type #something in a note")]));
   if(S.sel.startsWith("#")&&!tc[S.sel.slice(1)])S.sel="all";
-  $("#list-name").textContent=S.sel==="all"?"all notes":S.sel==="loose"?"no folder":S.sel.startsWith("#")?S.sel:(fname(S.sel)||"folder");
+  $("#list-name").textContent=S.sel==="all"?"all notes":S.sel==="loose"?"no folder":S.sel.startsWith("#")?S.sel:(path(S.sel)||"folder");
   const list=shown();$("#list-count").textContent=list.length;
   tools();
   $("#notes").replaceChildren(...(list.length?list.map(n=>{
@@ -459,6 +479,15 @@ function render(){
       h("span",{class:"t"},title(n)),snippet(n)?h("span",{class:"p"},snippet(n)):null,
       h("span",{class:"m"},h("span",{},when(n.updatedAt)),f&&!S.sel.startsWith("f-")?h("span",{class:"chip",style:"background:"+f.color},f.name):null,...tg.map(t=>h("span",{class:"tg"},"#"+t)))));
   }):[h("li",{class:"empty"},S.q?"nothing found":"empty. press + to write")]));
+}
+function path(id){const parts=[];let f=folderOf(id),guard=0;while(f&&guard++<20){parts.unshift(f.name);f=folderOf(f.parent)}return parts.join(" / ")}
+function addFolder(name,parent){
+  const p=folderOf(parent);
+  const used=new Set(S.book.folders.map(f=>f.color));
+  const color=p?p.color:(PASTELS.find(c=>!used.has(c))||PASTELS[S.book.folders.length%PASTELS.length]);
+  const f={id:uid("f-"),name,color,parent:p?p.id:""};
+  S.book.folders.push(f);S.book.foldersAt=Date.now();S.collapsed.delete(parent);store("notas.collapsed",[...S.collapsed]);
+  S.sel=f.id;S.fedit=null;dirty();render();
 }
 function tools(){
   const box=$("#ftools"),f=folderOf(S.sel);
@@ -471,12 +500,23 @@ function tools(){
   }else if(S.fedit==="color"){
     box.replaceChildren(h("span",{class:"swatches"},...PASTELS.map(c=>h("button",{style:"background:"+c,"aria-label":"Folder color "+c,"aria-pressed":String(f.color===c),onclick:()=>{f.color=c;S.book.foldersAt=Date.now();S.fedit=null;dirty();render();if(S.open)fill()}}))),
       h("button",{class:"link",onclick:()=>{S.fedit=null;tools()}},"done"));
+  }else if(S.fedit==="sub"){
+    const i=h("input",{id:"sf",maxlength:"40",placeholder:"subfolder name","aria-label":"Subfolder name"});
+    const done=ok=>{const v=i.value.trim();if(ok&&v)addFolder(v,f.id);else{S.fedit=null;tools()}};
+    i.addEventListener("keydown",e=>{if(e.key==="Enter")done(true);if(e.key==="Escape")done(false)});
+    box.replaceChildren(i,h("button",{class:"link",onclick:()=>done(true)},"create"));setTimeout(()=>i.focus(),0);
   }else if(S.fedit==="delete"){
-    box.replaceChildren(h("span",{},"delete folder? notes move to “no folder”"),
-      h("button",{class:"link danger",onclick:()=>{S.book.folders=S.book.folders.filter(x=>x.id!==f.id);S.book.foldersAt=Date.now();
-        for(const n of all())if(n.folder===f.id){n.folder="";n.updatedAt=Date.now()}S.sel="all";S.fedit=null;dirty();render();if(S.open)fill()}},"delete"),
+    const up=folderOf(f.parent),where=up?"“"+up.name+"”":"“no folder”";
+    box.replaceChildren(h("span",{},"delete folder? its notes"+(kids(f.id).length?" and subfolders":"")+" move to "+where),
+      h("button",{class:"link danger",onclick:()=>{
+        const pid=up?up.id:"";
+        for(const k of kids(f.id))k.parent=pid;
+        S.book.folders=S.book.folders.filter(x=>x.id!==f.id);S.book.foldersAt=Date.now();
+        for(const n of all())if(n.folder===f.id){n.folder=pid;n.updatedAt=Date.now()}
+        S.sel=pid||"all";S.fedit=null;dirty();render();if(S.open)fill()}},"delete"),
       h("button",{class:"link",onclick:()=>{S.fedit=null;tools()}},"cancel"));
   }else box.replaceChildren(
+    h("button",{class:"link",onclick:()=>{S.fedit="sub";tools()}},"+ subfolder"),
     h("button",{class:"link",onclick:()=>{S.fedit="rename";tools()}},"rename"),
     h("button",{class:"link",onclick:()=>{S.fedit="color";tools()}},"color"),
     h("button",{class:"link danger",onclick:()=>{S.fedit="delete";tools()}},"delete folder"));
@@ -485,10 +525,7 @@ $("#add-folder").onclick=()=>{const b=$("#newf");b.hidden=!b.hidden;if(!b.hidden
 $("#nf").addEventListener("keydown",e=>{
   if(e.key==="Escape"){$("#newf").hidden=true;return}if(e.key!=="Enter")return;
   const v=e.target.value.trim();if(!v)return;
-  const used=new Set(S.book.folders.map(f=>f.color));
-  const color=PASTELS.find(c=>!used.has(c))||PASTELS[S.book.folders.length%PASTELS.length];
-  const f={id:uid("f-"),name:v,color};
-  S.book.folders.push(f);S.book.foldersAt=Date.now();$("#newf").hidden=true;S.sel=f.id;dirty();render();
+  $("#newf").hidden=true;addFolder(v,"");
 });
 $("#q").addEventListener("input",e=>{S.q=e.target.value;render()});
 
@@ -509,7 +546,7 @@ function fill(){
   if(ti.value!==(n.title||""))ti.value=n.title||"";
   const html=clean(n.html);if(ed.innerHTML!==html)ed.innerHTML=html;
   const f=folderOf(n.folder),sel=$("#folder");
-  sel.replaceChildren(h("option",{value:""},"no folder"),...S.book.folders.map(x=>h("option",{value:x.id},x.name)));
+  sel.replaceChildren(h("option",{value:""},"no folder"),...tree().map(({f:x,d})=>h("option",{value:x.id},"\u00a0\u00a0".repeat(d)+(d?"↳ ":"")+x.name)));
   sel.value=f?n.folder:"";sel.style.setProperty("--fc",f?f.color:"");
   edited(n);del();
 }
