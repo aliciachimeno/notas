@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="notas">
+<meta name="theme-color" content="#f7f6f2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#161616" media="(prefers-color-scheme: dark)">
+<title>notas</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23111'/%3E%3Cpath d='M18 22h28M18 32h28M18 42h16' stroke='%23ffd23f' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23111'/%3E%3Cpath d='M18 22h28M18 32h28M18 42h16' stroke='%23ffd23f' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+/* notas: folders | list | text. One pane at a time on the phone. Plain text, tags are #words. */
+:root{
+  --bg:#f7f6f2; --side:#efede7; --paper:#fffefb; --ink:#161616; --muted:#77736a; --line:#e2dfd6;
+  --hi:#ffd23f; --hi-ink:#161616; --tag:#7a5c00; --danger:#b3261e;
+  --mono:"IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --ui:-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#161616; --side:#1c1c1b; --paper:#1f1f1e; --ink:#ecebe6; --muted:#9a968c; --line:#2f2e2b;
+  --hi:#ffd23f; --hi-ink:#161616; --tag:#ffd23f; --danger:#ff8a80; color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 var(--ui);overflow:hidden;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0;padding:0}
+:focus-visible{outline:2px solid var(--hi);outline-offset:2px}
+[hidden]{display:none!important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* gate */
+.gate{height:100%;overflow:auto;display:grid;place-items:center;padding:24px 16px}
+.card{width:min(420px,100%);display:grid;gap:14px}
+.logo{font:600 40px/1 var(--mono);letter-spacing:-.02em}
+.logo span{background:var(--hi);color:var(--hi-ink);padding:0 6px}
+.card p{margin:0;color:var(--muted)}
+.card form{display:grid;gap:10px}
+.field{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--paper)}
+.field:focus{outline:none;border-color:var(--ink)}
+.small{font-size:13px;color:var(--muted)} .small a{color:inherit}
+.err{color:var(--danger);font-size:14px;min-height:1.2em}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn{padding:11px 18px;border-radius:10px;background:var(--ink);color:var(--bg);font-weight:600}
+.btn:disabled{opacity:.5}
+.link{font-size:13px;color:var(--muted);text-decoration:underline}
+.link.danger{color:var(--danger)}
+
+/* app */
+.app{height:100%;display:grid;grid-template-columns:200px 290px minmax(0,1fr)}
+.pane{min-width:0;min-height:0;display:flex;flex-direction:column}
+.side{background:var(--side);border-right:1px solid var(--line)}
+.list{background:var(--bg);border-right:1px solid var(--line)}
+.text{background:var(--paper)}
+.scroll{overflow:auto;min-height:0;flex:1}
+.label{display:flex;justify-content:space-between;align-items:center;padding:16px 16px 6px;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.label button{font-size:18px;line-height:1;width:24px;height:24px;border-radius:6px;color:var(--ink)}
+.nav{list-style:none;margin:0;padding:0 8px;display:grid;gap:1px}
+.nav button{display:flex;gap:8px;width:100%;text-align:left;padding:7px 10px;border-radius:8px;font-size:14px}
+.nav button:hover{background:color-mix(in srgb,var(--ink) 7%,transparent)}
+.nav button[aria-current="true"]{background:var(--hi);color:var(--hi-ink)}
+.nav .lbl{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nav .n{font:12px var(--mono);opacity:.6}
+.nav .tagname{font-family:var(--mono);font-size:13px}
+.newf{padding:2px 8px 6px} .newf input{width:100%;padding:7px 10px;border:1px solid var(--ink);border-radius:8px;background:var(--paper)}
+.foot{border-top:1px solid var(--line);padding:10px 16px;display:flex;justify-content:space-between;gap:8px;font:12px var(--mono);color:var(--muted)}
+.foot button{text-decoration:underline}
+
+.head{padding:12px 12px 10px;display:grid;gap:8px;border-bottom:1px solid var(--line)}
+.titlebar{display:flex;align-items:center;gap:6px;min-height:34px}
+.titlebar h1{font:600 17px var(--mono);margin:0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.count{font:12px var(--mono);color:var(--muted)}
+.search{width:100%;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--paper);font-size:14px}
+.search:focus{outline:none;border-color:var(--ink)}
+.icon{width:34px;height:34px;border-radius:8px;display:inline-grid;place-items:center;flex:none}
+.icon:hover{background:color-mix(in srgb,var(--ink) 7%,transparent)}
+.icon svg{width:19px;height:19px}
+.new{background:var(--ink);color:var(--bg)} .new:hover{background:var(--ink);opacity:.85}
+.ftools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--muted)}
+.ftools input{flex:1;min-width:0;padding:6px 10px;border:1px solid var(--ink);border-radius:8px;background:var(--paper)}
+
+.notes{list-style:none;margin:0;padding:4px 6px 24px}
+.item{display:grid;gap:2px;width:100%;text-align:left;padding:10px 12px;border-radius:10px;border-bottom:1px solid var(--line)}
+.item:hover{background:color-mix(in srgb,var(--ink) 4%,transparent)}
+.item[aria-current="true"]{background:var(--hi);color:var(--hi-ink);border-color:transparent}
+.item .t{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .p{font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item[aria-current="true"] .p{color:inherit;opacity:.75}
+.item .m{display:flex;gap:8px;font:11px var(--mono);color:var(--muted);flex-wrap:wrap}
+.item[aria-current="true"] .m{color:inherit;opacity:.7}
+.item .tg{color:var(--tag)} .item[aria-current="true"] .tg{color:inherit}
+.empty{padding:32px 16px;text-align:center;color:var(--muted);font-size:14px}
+
+.bar{display:flex;align-items:center;gap:6px;padding:8px 12px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.bar select{padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper);font-size:13px;max-width:170px}
+.grow{flex:1}
+.when{font:11px var(--mono);color:var(--muted)}
+.confirm{display:flex;gap:10px;align-items:center;font-size:13px}
+#body{flex:1;width:100%;border:0;outline:none;resize:none;background:transparent;padding:24px max(20px,calc((100% - 70ch)/2)) 120px;font:15px/1.75 var(--mono);tab-size:2}
+#body::placeholder{color:var(--muted)}
+.blank{flex:1;display:grid;place-items:center;color:var(--muted);font:14px var(--mono);text-align:center;padding:24px}
+.back{display:none}
+
+@media (max-width:760px){
+  .app{grid-template-columns:1fr}
+  .pane{display:none}
+  body.v-side .side, body.v-list .list, body.v-text .text{display:flex}
+  .side,.list{border-right:0}
+  .back{display:inline-grid}
+  #body{padding:16px 16px 120px;font-size:16px}
+}
+</style>
+</head>
+<body class="v-list">
+
+<div class="gate" id="gate">
+  <div class="card">
+    <div class="logo"><span>notas</span></div>
+    <p id="gate-text">opening…</p>
+    <form id="gate-form" hidden autocomplete="off">
+      <div id="f-connect" hidden style="display:grid;gap:10px">
+        <label class="sr" for="c-token">GitHub token</label>
+        <input class="field" id="c-token" type="password" placeholder="GitHub token (github_pat_…)" spellcheck="false">
+        <label class="sr" for="c-repo">Private repo for your notes</label>
+        <input class="field" id="c-repo" placeholder="private repo, e.g. aliciachimeno/notas-data" spellcheck="false">
+        <p class="small">Fine-grained token with access only to that private repo, permission <b>Contents: read and write</b>. It's saved on this device only. <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Create one</a>.</p>
+      </div>
+      <div id="f-pw" hidden style="display:grid;gap:10px">
+        <label class="sr" for="pw1">Password</label>
+        <input class="field" id="pw1" type="password" placeholder="password">
+        <label class="sr" for="pw2">Repeat password</label>
+        <input class="field" id="pw2" type="password" placeholder="repeat password">
+      </div>
+      <div class="err" id="gate-err" role="alert"></div>
+      <div class="row"><button class="btn" id="gate-btn" type="submit">open</button><button class="link" id="gate-alt" type="button"></button></div>
+    </form>
+  </div>
+</div>
+
+<div class="app" id="app" hidden>
+  <nav class="pane side" aria-label="Folders and tags">
+    <div class="scroll">
+      <ul class="nav" style="padding-top:12px" id="nav-main"></ul>
+      <div class="label">folders <button id="add-folder" aria-label="New folder" title="New folder">+</button></div>
+      <div class="newf" id="newf" hidden><label class="sr" for="nf">Folder name</label><input id="nf" placeholder="folder name" maxlength="40"></div>
+      <ul class="nav" id="nav-folders"></ul>
+      <div class="label">tags</div>
+      <ul class="nav" id="nav-tags"></ul>
+    </div>
+    <div class="foot"><span id="sync">encrypted</span><span class="row"><button id="lock">lock</button><button id="settings">setup</button></span></div>
+  </nav>
+
+  <section class="pane list" aria-label="Notes">
+    <div class="head">
+      <div class="titlebar">
+        <button class="icon back" id="back-side" aria-label="Folders"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <h1 id="list-name">all notes</h1><span class="count" id="list-count"></span>
+        <button class="icon new" id="new" aria-label="New note" title="New note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+      </div>
+      <div class="ftools" id="ftools" hidden></div>
+      <label class="sr" for="q">Search</label>
+      <input class="search" id="q" type="search" placeholder="search">
+    </div>
+    <div class="scroll"><ul class="notes" id="notes"></ul></div>
+  </section>
+
+  <main class="pane text" aria-label="Note">
+    <div class="blank" id="blank">pick a note, or press +</div>
+    <div id="editor" hidden style="flex:1;min-height:0;display:flex;flex-direction:column">
+      <div class="bar">
+        <button class="icon back" id="back-list" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <label class="sr" for="folder">Folder</label>
+        <select id="folder"></select>
+        <span class="grow"></span>
+        <span class="when" id="when"></span>
+        <span id="del"></span>
+      </div>
+      <label class="sr" for="body">Note</label>
+      <textarea id="body" placeholder="first line is the title&#10;&#10;write anything. add #tags anywhere." spellcheck="true"></textarea>
+    </div>
+  </main>
+</div>
+
+<script>
+(() => {
+"use strict";
+const FILE="notas.json", CFG_KEY="notas.cfg", CACHE_KEY="notas.cache";
+const $=s=>document.querySelector(s);
+const te=new TextEncoder(), td=new TextDecoder();
+let CFG=load(CFG_KEY);
+const S={key:null,salt:null,check:null,book:null,sha:null,pending:null,remote:null,
+  sel:"all",open:null,q:"",dirty:false,syncing:false,again:false,timer:null,confirm:false,fedit:null};
+
+/* helpers */
+function load(k){try{return JSON.parse(localStorage.getItem(k))}catch{return null}}
+function store(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(k,JSON.stringify(v))}catch{}}
+function h(t,a,...k){const e=document.createElement(t);for(const[x,v]of Object.entries(a||{})){if(x==="class")e.className=v;else if(x.startsWith("on"))e.addEventListener(x.slice(2),v);else if(v===true)e.setAttribute(x,"");else if(v!==false&&v!=null)e.setAttribute(x,v)}for(const c of k.flat()){if(c==null||c===false)continue;e.append(c.nodeType?c:document.createTextNode(String(c)))}return e}
+const uid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const tFmt=new Intl.DateTimeFormat(undefined,{hour:"2-digit",minute:"2-digit"});
+const dFmt=new Intl.DateTimeFormat(undefined,{day:"numeric",month:"short"});
+function when(t){const d=new Date(t),n=new Date();return d.toDateString()===n.toDateString()?tFmt.format(d):dFmt.format(d)}
+const title=n=>(n.body||"").trim().split("\n")[0].replace(/^#+\s*/,"").slice(0,80)||"new note";
+const snippet=n=>(n.body||"").trim().split("\n").slice(1).join(" ").replace(/\s+/g," ").slice(0,100);
+const tagsOf=n=>[...new Set(((n.body||"").match(/(^|\s)#([\p{L}\p{N}_-]+)/gu)||[]).map(x=>x.trim().slice(1).toLowerCase()))];
+
+/* crypto */
+function b64(buf){const b=new Uint8Array(buf);let s="";for(let i=0;i<b.length;i+=32768)s+=String.fromCharCode.apply(null,b.subarray(i,i+32768));return btoa(s)}
+function unb64(s){const x=atob(s.replace(/\s/g,""));const u=new Uint8Array(x.length);for(let i=0;i<x.length;i++)u[i]=x.charCodeAt(i);return u}
+async function derive(pw,salt){const k=await crypto.subtle.importKey("raw",te.encode(pw),"PBKDF2",false,["deriveKey"]);return crypto.subtle.deriveKey({name:"PBKDF2",salt,iterations:250000,hash:"SHA-256"},k,{name:"AES-GCM",length:256},false,["encrypt","decrypt"])}
+async function seal(o,key=S.key){const iv=crypto.getRandomValues(new Uint8Array(12));return{iv:b64(iv),ct:b64(await crypto.subtle.encrypt({name:"AES-GCM",iv},key,te.encode(JSON.stringify(o))))}}
+async function unseal(b,key=S.key){return JSON.parse(td.decode(await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(b.iv)},key,unb64(b.ct))))}
+
+/* github */
+function err(status,detail){const e=new Error("GitHub "+status);e.status=status;e.detail=detail;return e}
+async function gh(path,opts={}){
+  const headers={"Accept":"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28","Authorization":"Bearer "+CFG.token};
+  if(opts.body)headers["Content-Type"]="application/json";
+  return fetch("https://api.github.com/repos/"+CFG.repo+path,{cache:"no-store",...opts,headers});
+}
+async function detail(r){try{return(await r.json()).message}catch{return""}}
+async function remoteLoad(){
+  const r=await gh("/contents/"+FILE);
+  if(r.status===404||r.status===409)return null;
+  if(!r.ok)throw err(r.status,await detail(r));
+  const j=await r.json();let c=j.content;
+  if(!c){const b=await gh("/git/blobs/"+j.sha);if(!b.ok)throw err(b.status,await detail(b));c=(await b.json()).content}
+  return{vault:JSON.parse(td.decode(unb64(c))),sha:j.sha};
+}
+async function remoteSave(vault,sha){
+  const body={message:"notas "+new Date().toISOString().slice(0,16).replace("T"," "),content:b64(te.encode(JSON.stringify(vault)))};
+  if(sha)body.sha=sha;
+  const r=await gh("/contents/"+FILE,{method:"PUT",body:JSON.stringify(body)});
+  if(r.status===409||r.status===422){const e=new Error("conflict");e.conflict=true;throw e}
+  if(!r.ok)throw err(r.status,await detail(r));
+  return(await r.json()).content.sha;
+}
+
+/* gate */
+function gate(mode,text,error){
+  $("#gate-text").textContent=text;const f=$("#gate-form");f.dataset.mode=mode||"";f.hidden=!mode;
+  $("#f-connect").hidden=mode!=="connect";$("#f-pw").hidden=!(mode==="setup"||mode==="unlock");$("#pw2").hidden=mode!=="setup";
+  $("#gate-btn").textContent=mode==="connect"?"connect":mode==="setup"?"create":"open";
+  const alt=$("#gate-alt");alt.textContent=mode==="connect"?(CFG?"forget this device":""):(mode?"setup":"");alt.hidden=!alt.textContent;
+  $("#gate-err").textContent=error||"";$("#pw1").value="";$("#pw2").value="";
+  if(mode==="connect"){$("#c-token").value=CFG?CFG.token:"";$("#c-repo").value=CFG?CFG.repo:""}
+  $("#gate").hidden=false;$("#app").hidden=true;
+  if(mode)setTimeout(()=>(mode==="connect"?$("#c-token"):$("#pw1")).focus(),30);
+}
+$("#gate-alt").onclick=()=>{
+  if($("#gate-form").dataset.mode==="connect"){CFG=null;store(CFG_KEY,null);store(CACHE_KEY,null);gate("connect","This device is forgotten. Connect again to use notas here.")}
+  else gate("connect","Your GitHub token and the private repo where notes are saved.");
+};
+$("#gate-form").addEventListener("submit",async e=>{
+  e.preventDefault();const mode=e.currentTarget.dataset.mode,btn=$("#gate-btn"),lbl=btn.textContent;
+  $("#gate-err").textContent="";btn.disabled=true;btn.textContent="…";
+  try{if(mode==="connect")await connect();else if(mode==="setup")await setup();else await unlock()}
+  catch(x){$("#gate-err").textContent=x.msg||"Couldn't reach GitHub. Check your connection and try again."}
+  btn.disabled=false;if(btn.textContent==="…")btn.textContent=lbl;
+});
+const fail=m=>{const x=new Error(m);x.msg=m;throw x};
+
+async function connect(){
+  const token=$("#c-token").value.trim(),repo=$("#c-repo").value.trim().replace(/^https:\/\/github\.com\//,"").replace(/\/$/,"");
+  if(!token)fail("Paste your GitHub token.");
+  if(!/^[\w.-]+\/[\w.-]+$/.test(repo))fail("Write the repo as user/name, e.g. aliciachimeno/notas-data.");
+  const prev=CFG;CFG={token,repo};
+  const r=await gh("").catch(()=>null);
+  if(!r){CFG=prev;fail("Couldn't reach GitHub. Check your connection.")}
+  if(r.status===401){CFG=prev;fail("GitHub rejected this token. Check it was copied whole and hasn't expired.")}
+  if(r.status===404){CFG=prev;fail("Can't see "+repo+". Check the name, and that the token has access to it.")}
+  if(!r.ok){CFG=prev;fail("GitHub said "+r.status+". "+await detail(r))}
+  const j=await r.json();
+  if(!j.private){CFG=prev;fail(repo+" is public. Make it private first.")}
+  if(j.permissions&&!j.permissions.push){CFG=prev;fail("This token can't write to "+repo+". Give it Contents: read and write.")}
+  store(CFG_KEY,CFG);store(CACHE_KEY,null);await openVault();
+}
+async function openVault(){
+  let rem=null,offline=false;
+  try{rem=await remoteLoad()}
+  catch(x){
+    if(x.status===401){gate("connect","","Your token stopped working. Paste a new one.");return}
+    if(x.status){gate("connect","","GitHub said "+x.status+(x.detail?" ("+x.detail+")":"")+". Check the token's access to "+CFG.repo+".");return}
+    offline=true;
+  }
+  const cache=load(CACHE_KEY),v=rem?rem.vault:cache&&cache.vault;S.remote=rem;S.pending=v;
+  if(!v){if(offline)gate("connect","","Can't reach GitHub from here. Check your connection and press connect.");
+    else gate("setup","Choose a password. Your notes are encrypted with it on this device before they're saved, so nobody else can read them. If you forget it, they can't be recovered.");return}
+  gate("unlock",offline?"Offline: opening the copy saved on this device.":"Your password.");
+}
+async function setup(){
+  const pw=$("#pw1").value;
+  if(pw.length<8)fail("Use at least 8 characters.");
+  if(pw!==$("#pw2").value)fail("The passwords don't match.");
+  const salt=crypto.getRandomValues(new Uint8Array(16));
+  S.key=await derive(pw,salt);S.salt=b64(salt);S.check=await seal({ok:"notas"});
+  S.book={folders:[{id:"f-ideas",name:"ideas"},{id:"f-personal",name:"personal"}],foldersAt:Date.now(),notes:{},deleted:{}};
+  S.sha=null;start();dirty(0);
+}
+async function unlock(){
+  const v=S.pending,key=await derive($("#pw1").value,unb64(v.salt));
+  let ok=false;try{ok=(await unseal(v.check,key)).ok==="notas"}catch{}
+  if(!ok){$("#pw1").select();fail("Wrong password.")}
+  S.key=key;S.salt=v.salt;S.check=v.check;
+  let book=await unseal(v.data);const cache=load(CACHE_KEY);
+  S.sha=S.remote?S.remote.sha:(cache&&cache.sha)||null;
+  if(cache&&cache.dirty&&cache.vault&&cache.vault.salt===v.salt&&cache.vault!==v){try{book=merge(book,await unseal(cache.vault.data));S.dirty=true}catch{}}
+  S.book=book;start();if(S.dirty)dirty(0);else store(CACHE_KEY,{vault:v,sha:S.sha,dirty:false});
+}
+
+/* sync */
+function merge(a,b){
+  const o={folders:(a.foldersAt||0)>=(b.foldersAt||0)?a.folders:b.folders,foldersAt:Math.max(a.foldersAt||0,b.foldersAt||0),notes:{},deleted:{...(b.deleted||{})}};
+  for(const[k,t]of Object.entries(a.deleted||{}))o.deleted[k]=Math.max(t,o.deleted[k]||0);
+  for(const src of[b,a])for(const n of Object.values(src.notes||{})){const c=o.notes[n.id];if(!c||n.updatedAt>c.updatedAt)o.notes[n.id]=n}
+  for(const[id,t]of Object.entries(o.deleted))if(o.notes[id]&&o.notes[id].updatedAt<=t)delete o.notes[id];
+  return o;
+}
+async function vault(){return{v:1,salt:S.salt,check:S.check,data:await seal(S.book),at:Date.now()}}
+const setSync=t=>$("#sync").textContent=t;
+function dirty(delay=2000){S.dirty=true;setSync("saving…");clearTimeout(S.timer);S.timer=setTimeout(sync,delay)}
+async function sync(){
+  if(!S.key)return;if(S.syncing){S.again=true;return}
+  S.syncing=true;clearTimeout(S.timer);
+  try{
+    for(let i=0;i<4;i++){
+      S.dirty=false;const v=await vault();store(CACHE_KEY,{vault:v,sha:S.sha,dirty:true});
+      try{S.sha=await remoteSave(v,S.sha);store(CACHE_KEY,{vault:v,sha:S.sha,dirty:false});setSync("saved "+tFmt.format(new Date()));break}
+      catch(x){if(!x.conflict)throw x;S.dirty=true;await pull(true)}
+    }
+  }catch(x){
+    S.dirty=true;
+    if(x.status===401)setSync("token expired · setup");
+    else{setSync("offline · saved here");clearTimeout(S.timer);S.timer=setTimeout(sync,20000)}
+  }finally{S.syncing=false;if(S.again){S.again=false;if(S.dirty)sync()}}
+}
+async function pull(force){
+  const r=await remoteLoad();if(!r){S.sha=null;return}
+  if(!force&&r.sha===S.sha)return;if(r.vault.salt!==S.salt)return;
+  S.book=merge(S.book,await unseal(r.vault.data));S.sha=r.sha;
+  if(!S.dirty)store(CACHE_KEY,{vault:r.vault,sha:r.sha,dirty:false});
+  render();if(S.open&&document.activeElement!==$("#body"))fill();if(S.open&&!S.book.notes[S.open])close();
+}
+async function refresh(){if(!S.key||S.syncing)return;if(S.dirty){sync();return}try{await pull(false)}catch{}}
+window.addEventListener("focus",refresh);
+window.addEventListener("online",()=>{if(S.dirty)sync()});
+document.addEventListener("visibilitychange",async()=>{if(!S.key)return;if(document.hidden){if(S.dirty){store(CACHE_KEY,{vault:await vault(),sha:S.sha,dirty:true});sync()}}else refresh()});
+setInterval(()=>{if(!document.hidden)refresh()},120000);
+
+/* app */
+function start(){$("#gate").hidden=true;$("#app").hidden=false;view("list");render()}
+$("#lock").onclick=async()=>{if(S.dirty)await sync();S.key=null;S.book=null;close();openVault()};
+$("#settings").onclick=()=>gate("connect","Your GitHub token and the private repo where notes are saved.");
+function view(v){document.body.classList.remove("v-side","v-list","v-text");document.body.classList.add("v-"+v)}
+$("#back-side").onclick=()=>view("side");
+$("#back-list").onclick=()=>{dropEmpty(S.open);view("list")};
+
+const all=()=>Object.values(S.book.notes);
+const fname=id=>(S.book.folders.find(f=>f.id===id)||{}).name;
+function shown(){
+  const q=S.q.trim().toLowerCase();
+  return all().filter(n=>{
+    if(S.sel.startsWith("#")){if(!tagsOf(n).includes(S.sel.slice(1)))return false}
+    else if(S.sel==="loose"){if(fname(n.folder))return false}
+    else if(S.sel!=="all"&&n.folder!==S.sel)return false;
+    return!q||(n.body||"").toLowerCase().includes(q);
+  }).sort((a,b)=>b.updatedAt-a.updatedAt);
+}
+function navItem(id,name,n,cls){return h("li",{},h("button",{"aria-current":String(S.sel===id),onclick:()=>{S.sel=id;S.fedit=null;render();view("list")}},h("span",{class:"lbl"+(cls?" "+cls:"")},name),h("span",{class:"n"},n)))}
+function render(){
+  if(!S.book)return;const ns=all();
+  const main=[navItem("all","all notes",ns.length)];const loose=ns.filter(n=>!fname(n.folder)).length;if(loose)main.push(navItem("loose","no folder",loose));
+  $("#nav-main").replaceChildren(...main);
+  $("#nav-folders").replaceChildren(...S.book.folders.map(f=>navItem(f.id,f.name,ns.filter(n=>n.folder===f.id).length)));
+  const tc={};for(const n of ns)for(const t of tagsOf(n))tc[t]=(tc[t]||0)+1;
+  const tags=Object.keys(tc).sort();
+  $("#nav-tags").replaceChildren(...(tags.length?tags.map(t=>navItem("#"+t,"#"+t,tc[t],"tagname")):[h("li",{class:"small",style:"padding:4px 18px"},"type #something in a note")]));
+  if(S.sel.startsWith("#")&&!tc[S.sel.slice(1)])S.sel="all";
+  $("#list-name").textContent=S.sel==="all"?"all notes":S.sel==="loose"?"no folder":S.sel.startsWith("#")?S.sel:(fname(S.sel)||"folder");
+  const list=shown();$("#list-count").textContent=list.length;
+  tools();
+  $("#notes").replaceChildren(...(list.length?list.map(n=>{
+    const tg=tagsOf(n).slice(0,3);
+    return h("li",{},h("button",{class:"item","aria-current":String(S.open===n.id),onclick:()=>openNote(n.id)},
+      h("span",{class:"t"},title(n)),snippet(n)?h("span",{class:"p"},snippet(n)):null,
+      h("span",{class:"m"},h("span",{},when(n.updatedAt)),S.sel==="all"&&fname(n.folder)?h("span",{},fname(n.folder)):null,...tg.map(t=>h("span",{class:"tg"},"#"+t)))));
+  }):[h("li",{class:"empty"},S.q?"nothing found":"empty. press + to write")]));
+}
+function tools(){
+  const box=$("#ftools"),f=S.book.folders.find(x=>x.id===S.sel);
+  if(!f){box.hidden=true;box.replaceChildren();return}box.hidden=false;
+  if(S.fedit==="rename"){
+    const i=h("input",{id:"rn",value:f.name,maxlength:"40","aria-label":"Folder name"});
+    const done=ok=>{const v=i.value.trim();S.fedit=null;if(ok&&v&&v!==f.name){f.name=v;S.book.foldersAt=Date.now();dirty()}render()};
+    i.addEventListener("keydown",e=>{if(e.key==="Enter")done(true);if(e.key==="Escape")done(false)});
+    box.replaceChildren(i,h("button",{class:"link",onclick:()=>done(true)},"save"));setTimeout(()=>{i.focus();i.select()},0);
+  }else if(S.fedit==="delete"){
+    box.replaceChildren(h("span",{},"delete folder? notes move to “no folder”"),
+      h("button",{class:"link danger",onclick:()=>{S.book.folders=S.book.folders.filter(x=>x.id!==f.id);S.book.foldersAt=Date.now();
+        for(const n of all())if(n.folder===f.id){n.folder="";n.updatedAt=Date.now()}S.sel="all";S.fedit=null;dirty();render();if(S.open)fill()}},"delete"),
+      h("button",{class:"link",onclick:()=>{S.fedit=null;tools()}},"cancel"));
+  }else box.replaceChildren(h("button",{class:"link",onclick:()=>{S.fedit="rename";tools()}},"rename"),h("button",{class:"link danger",onclick:()=>{S.fedit="delete";tools()}},"delete folder"));
+}
+$("#add-folder").onclick=()=>{const b=$("#newf");b.hidden=!b.hidden;if(!b.hidden){$("#nf").value="";$("#nf").focus()}};
+$("#nf").addEventListener("keydown",e=>{
+  if(e.key==="Escape"){$("#newf").hidden=true;return}if(e.key!=="Enter")return;
+  const v=e.target.value.trim();if(!v)return;const f={id:uid("f-"),name:v};
+  S.book.folders.push(f);S.book.foldersAt=Date.now();$("#newf").hidden=true;S.sel=f.id;dirty();render();
+});
+$("#q").addEventListener("input",e=>{S.q=e.target.value;render()});
+
+/* notes */
+$("#new").onclick=()=>{
+  const t=Date.now(),n={id:uid("n"),body:S.sel.startsWith("#")?"\n\n"+S.sel:"",folder:S.book.folders.some(f=>f.id===S.sel)?S.sel:"",createdAt:t,updatedAt:t};
+  S.book.notes[n.id]=n;S.q="";$("#q").value="";openNote(n.id);$("#body").focus();$("#body").setSelectionRange(0,0);
+};
+function openNote(id){if(S.open&&S.open!==id)dropEmpty(S.open);S.open=id;S.confirm=false;$("#blank").hidden=true;$("#editor").hidden=false;fill();render();view("text")}
+function close(){S.open=null;$("#editor").hidden=true;$("#blank").hidden=false}
+function dropEmpty(id){const n=id&&S.book&&S.book.notes[id];if(n&&!(n.body||"").replace(/#\S+/g,"").trim()){delete S.book.notes[id];if(S.open===id)close();render()}}
+function fill(){
+  const n=S.book.notes[S.open];if(!n){close();return}
+  if($("#body").value!==n.body)$("#body").value=n.body;
+  $("#folder").replaceChildren(h("option",{value:""},"no folder"),...S.book.folders.map(f=>h("option",{value:f.id},f.name)));
+  $("#folder").value=fname(n.folder)?n.folder:"";$("#when").textContent=when(n.updatedAt);del();
+}
+$("#body").addEventListener("input",e=>{const n=S.book.notes[S.open];if(!n)return;n.body=e.target.value;n.updatedAt=Date.now();$("#when").textContent=when(n.updatedAt);dirty();render()});
+$("#folder").addEventListener("change",e=>{const n=S.book.notes[S.open];n.folder=e.target.value;n.updatedAt=Date.now();dirty();render()});
+function del(){
+  const z=$("#del");
+  if(S.confirm)z.replaceChildren(h("span",{class:"confirm"},"delete?",h("button",{class:"link danger",onclick:()=>{delete S.book.notes[S.open];S.book.deleted[S.open]=Date.now();dirty(0);close();view("list");render()}},"yes"),h("button",{class:"link",onclick:()=>{S.confirm=false;del()}},"no")));
+  else z.replaceChildren(h("button",{class:"icon","aria-label":"Delete note",title:"Delete note",onclick:()=>{S.confirm=true;del()}},svgTrash()));
+}
+function svgTrash(){const N="http://www.w3.org/2000/svg",s=document.createElementNS(N,"svg");s.setAttribute("viewBox","0 0 24 24");s.setAttribute("fill","none");s.setAttribute("stroke","currentColor");s.setAttribute("stroke-width","2");s.setAttribute("stroke-linecap","round");s.setAttribute("stroke-linejoin","round");const p=document.createElementNS(N,"path");p.setAttribute("d","M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13");s.append(p);return s}
+
+/* boot */
+if(!window.crypto||!crypto.subtle){gate(null,"This browser can't encrypt. Open notas over https in an up-to-date browser.");return}
+if(!CFG)gate("connect","Connect this device once. After that you only need your password.");else openVault();
+})();
+</script>
+</body>
+</html>
