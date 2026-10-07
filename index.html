@@ -135,7 +135,14 @@ button{cursor:pointer;background:none;border:0;padding:0}
 .blank{flex:1;display:grid;place-items:center;color:var(--muted);font:14px var(--mono);text-align:center;padding:24px}
 .back{display:none}
 
+/* focus mode: only the note */
+@media (min-width:761px){
+  body.focus .app{grid-template-columns:minmax(0,1fr)}
+  body.focus .side, body.focus .list{display:none}
+}
+#focus[aria-pressed="true"]{background:var(--side)}
 @media (max-width:760px){
+  #focus{display:none}
   .app{grid-template-columns:1fr}
   .pane{display:none}
   body.v-side .side, body.v-list .list, body.v-text .text{display:flex}
@@ -208,6 +215,7 @@ button{cursor:pointer;background:none;border:0;padding:0}
     <div class="blank" id="blank">pick a note, or press +</div>
     <div id="editor" hidden style="flex:1;min-height:0;display:flex;flex-direction:column">
       <div class="bar">
+        <button class="icon" id="focus" aria-pressed="false" aria-label="Hide sidebar (Ctrl+.)" title="Hide sidebar (Ctrl+.)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg></button>
         <button class="icon back" id="back-list" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
         <label class="sr" for="folder">Folder</label>
         <select id="folder"></select>
@@ -562,7 +570,7 @@ $("#new").onclick=()=>{
   S.book.notes[n.id]=n;S.q="";$("#q").value="";openNote(n.id);ti.focus();
 };
 function openNote(id){if(S.open&&S.open!==id)dropEmpty(S.open);S.open=id;S.confirm=false;$("#blank").hidden=true;$("#editor").hidden=false;fill();render();view("text");$("#sheet").scrollTop=0}
-function close(){S.open=null;$("#editor").hidden=true;$("#blank").hidden=false}
+function close(){S.open=null;$("#editor").hidden=true;$("#blank").hidden=false;if(document.body.classList.contains("focus"))setFocus(false)}
 function dropEmpty(id){const n=id&&S.book&&S.book.notes[id];if(n&&!(n.title||"").trim()&&!(n.body||"").replace(/#\S+/g,"").trim()&&!(n.body2||"").trim()){delete S.book.notes[id];if(S.open===id)close();render()}}
 function edited(n){$("#edited").textContent="last edited "+fullFmt.format(new Date(n.updatedAt))}
 function fill(){
@@ -626,6 +634,18 @@ function del(){
   else z.replaceChildren(h("button",{class:"icon","aria-label":"Delete note",title:"Delete note",onclick:()=>{S.confirm=true;del()}},svgTrash()));
 }
 function svgTrash(){const N="http://www.w3.org/2000/svg",s=document.createElementNS(N,"svg");s.setAttribute("viewBox","0 0 24 24");s.setAttribute("fill","none");s.setAttribute("stroke","currentColor");s.setAttribute("stroke-width","2");s.setAttribute("stroke-linecap","round");s.setAttribute("stroke-linejoin","round");const p=document.createElementNS(N,"path");p.setAttribute("d","M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13");s.append(p);return s}
+
+/* focus mode: hide folders and list */
+function setFocus(on){
+  document.body.classList.toggle("focus",on);
+  const b=$("#focus");b.setAttribute("aria-pressed",String(on));
+  const t=on?"Show sidebar (Ctrl+.)":"Hide sidebar (Ctrl+.)";b.title=t;b.setAttribute("aria-label",t);
+}
+$("#focus").addEventListener("click",()=>setFocus(!document.body.classList.contains("focus")));
+document.addEventListener("keydown",e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key==="."){e.preventDefault();if(S.open)setFocus(!document.body.classList.contains("focus"))}
+  else if(e.key==="Escape"&&document.body.classList.contains("focus"))setFocus(false);
+});
 
 /* Ctrl+S / Cmd+S: save now */
 document.addEventListener("keydown",e=>{
