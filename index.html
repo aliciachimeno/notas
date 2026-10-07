@@ -119,9 +119,18 @@ button{cursor:pointer;background:none;border:0;padding:0}
 .page{max-width:70ch;margin:0 auto;padding:22px 24px 140px;display:grid;gap:6px}
 .edited{font:12px var(--mono);color:var(--muted)}
 #title{width:100%;border:0;outline:none;background:transparent;padding:4px 0 2px;font:600 17px/1.4 var(--mono)}
-#body{min-height:60vh;outline:none;font:15px/1.75 var(--mono);overflow-wrap:anywhere;white-space:pre-wrap}
-#body b,#body strong{font-weight:600}
-#body:empty::before{content:attr(data-ph);color:var(--muted);pointer-events:none}
+.txt{min-height:60vh;outline:none;font:15px/1.75 var(--mono);overflow-wrap:anywhere;white-space:pre-wrap;min-width:0}
+.txt b,.txt strong{font-weight:600}
+.txt:empty::before{content:attr(data-ph);color:var(--muted);pointer-events:none}
+/* two columns: facts | thoughts */
+.cols{display:grid;grid-template-columns:1fr;gap:0}
+.col-h{display:none;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:2px 0 8px}
+.two .page{max-width:none}
+.two .cols{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.two .col-h{display:block}
+.two .col + .col{border-left:1px solid var(--line);padding-left:20px}
+.two .col:first-child{padding-right:20px}
+.two .txt{min-height:65vh}
 #title::placeholder{color:var(--muted)}
 .blank{flex:1;display:grid;place-items:center;color:var(--muted);font:14px var(--mono);text-align:center;padding:24px}
 .back{display:none}
@@ -133,7 +142,11 @@ button{cursor:pointer;background:none;border:0;padding:0}
   .side,.list{border-right:0}
   .back{display:inline-grid}
   .page{padding:16px 16px 140px}
-  #title{font-size:18px} #body{font-size:16px}
+  #title{font-size:18px} .txt{font-size:16px}
+  .two .cols{grid-template-columns:1fr}
+  .two .col + .col{border-left:0;padding-left:0;border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+  .two .col:first-child{padding-right:0}
+  .two .txt{min-height:30vh}
 }
 </style>
 </head>
@@ -200,6 +213,7 @@ button{cursor:pointer;background:none;border:0;padding:0}
         <select id="folder"></select>
         <button class="fmt b" id="fmt-b" aria-label="Bold (Ctrl+B)" title="Bold (Ctrl+B)" aria-pressed="false">B</button>
         <button class="fmt i" id="fmt-i" aria-label="Italic (Ctrl+I)" title="Italic (Ctrl+I)" aria-pressed="false">I</button>
+        <button class="fmt" id="fmt-cols" aria-label="Two columns" title="Two columns: facts | thoughts" aria-pressed="false"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" style="vertical-align:middle"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 4v16"/></svg></button>
         <span class="grow"></span>
         <span id="del"></span>
       </div>
@@ -208,7 +222,16 @@ button{cursor:pointer;background:none;border:0;padding:0}
           <div class="edited" id="edited"></div>
           <label class="sr" for="title">Title</label>
           <input id="title" placeholder="title" maxlength="200" autocomplete="off">
-          <div id="body" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Note" data-ph="write anything. add #tags anywhere." spellcheck="true"></div>
+          <div class="cols">
+            <div class="col">
+              <div class="col-h">facts</div>
+              <div id="body" class="txt" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Note" data-ph="write anything. add #tags anywhere." spellcheck="true"></div>
+            </div>
+            <div class="col" id="col2" hidden>
+              <div class="col-h">my thoughts</div>
+              <div id="body2" class="txt" contenteditable="true" role="textbox" aria-multiline="true" aria-label="My thoughts" data-ph="what you think about it…" spellcheck="true"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -239,7 +262,7 @@ const fullFmt=new Intl.DateTimeFormat(undefined,{weekday:"long",day:"numeric",mo
 function when(t){const d=new Date(t),n=new Date();return d.toDateString()===n.toDateString()?tFmt.format(d):dFmt.format(d)}
 const title=n=>(n.title||"").trim()||(n.body||"").trim().split("\n")[0].slice(0,80)||"new note";
 const snippet=n=>(n.title?(n.body||""):(n.body||"").split("\n").slice(1).join(" ")).replace(/\s+/g," ").trim().slice(0,100);
-const tagsOf=n=>[...new Set((((n.title||"")+" "+(n.body||"")).match(/(^|\s)#([\p{L}\p{N}_-]+)/gu)||[]).map(x=>x.trim().slice(1).toLowerCase()))];
+const tagsOf=n=>[...new Set((((n.title||"")+" "+(n.body||"")+" "+(n.body2||"")).match(/(^|\s)#([\p{L}\p{N}_-]+)/gu)||[]).map(x=>x.trim().slice(1).toLowerCase()))];
 
 /* notes from the first version were plain text: first line becomes the title */
 function normalize(book){
@@ -444,7 +467,7 @@ function shown(){
     if(S.sel.startsWith("#")){if(!tagsOf(n).includes(S.sel.slice(1)))return false}
     else if(S.sel==="loose"){if(fname(n.folder))return false}
     else if(S.sel!=="all"&&n.folder!==S.sel)return false;
-    return!q||((n.title||"")+" "+(n.body||"")).toLowerCase().includes(q);
+    return!q||((n.title||"")+" "+(n.body||"")+" "+(n.body2||"")).toLowerCase().includes(q);
   }).sort((a,b)=>b.updatedAt-a.updatedAt);
 }
 function navItem(id,name,n,opt={}){
@@ -530,7 +553,8 @@ $("#nf").addEventListener("keydown",e=>{
 $("#q").addEventListener("input",e=>{S.q=e.target.value;render()});
 
 /* notes */
-const ed=$("#body"), ti=$("#title");
+const ed=$("#body"), ed2=$("#body2"), ti=$("#title");
+let lastEd=ed;
 try{document.execCommand("defaultParagraphSeparator",false,"div");document.execCommand("styleWithCSS",false,false)}catch{}
 $("#new").onclick=()=>{
   const t=Date.now(),tag=S.sel.startsWith("#")?S.sel:"";
@@ -539,12 +563,14 @@ $("#new").onclick=()=>{
 };
 function openNote(id){if(S.open&&S.open!==id)dropEmpty(S.open);S.open=id;S.confirm=false;$("#blank").hidden=true;$("#editor").hidden=false;fill();render();view("text");$("#sheet").scrollTop=0}
 function close(){S.open=null;$("#editor").hidden=true;$("#blank").hidden=false}
-function dropEmpty(id){const n=id&&S.book&&S.book.notes[id];if(n&&!(n.title||"").trim()&&!(n.body||"").replace(/#\S+/g,"").trim()){delete S.book.notes[id];if(S.open===id)close();render()}}
+function dropEmpty(id){const n=id&&S.book&&S.book.notes[id];if(n&&!(n.title||"").trim()&&!(n.body||"").replace(/#\S+/g,"").trim()&&!(n.body2||"").trim()){delete S.book.notes[id];if(S.open===id)close();render()}}
 function edited(n){$("#edited").textContent="last edited "+fullFmt.format(new Date(n.updatedAt))}
 function fill(){
   const n=S.book.notes[S.open];if(!n){close();return}
   if(ti.value!==(n.title||""))ti.value=n.title||"";
   const html=clean(n.html);if(ed.innerHTML!==html)ed.innerHTML=html;
+  const html2=clean(n.html2||"");if(ed2.innerHTML!==html2)ed2.innerHTML=html2;
+  layout(n);
   const f=folderOf(n.folder),sel=$("#folder");
   sel.replaceChildren(h("option",{value:""},"no folder"),...tree().map(({f:x,d})=>h("option",{value:x.id},"\u00a0\u00a0".repeat(d)+(d?"↳ ":"")+x.name)));
   sel.value=f?n.folder:"";sel.style.setProperty("--fc",f?f.color:"");
@@ -553,22 +579,43 @@ function fill(){
 function changed(n){n.updatedAt=Date.now();edited(n);dirty();render()}
 ti.addEventListener("input",()=>{const n=S.book.notes[S.open];if(!n)return;n.title=ti.value;changed(n)});
 ti.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();ed.focus()}});
-ed.addEventListener("input",()=>{
+for(const[el,hk,bk]of[[ed,"html","body"],[ed2,"html2","body2"]]){
+  el.addEventListener("input",()=>{
+    const n=S.book.notes[S.open];if(!n)return;
+    if(el.innerHTML==="<br>"||el.innerHTML==="<div><br></div>")el.innerHTML="";
+    n[hk]=el.innerHTML;n[bk]=el.innerText.replace(/\n{3,}/g,"\n\n");changed(n);
+  });
+  /* paste as plain text so outside formatting doesn't sneak in */
+  el.addEventListener("paste",e=>{e.preventDefault();const t=(e.clipboardData||window.clipboardData).getData("text/plain");document.execCommand("insertText",false,t)});
+  el.addEventListener("focus",()=>{lastEd=el});
+  /* Tab jumps to the other column */
+  el.addEventListener("keydown",e=>{
+    const n=S.book.notes[S.open];
+    if(e.key==="Tab"&&n&&n.cols){e.preventDefault();const o=el===ed?ed2:ed;o.focus();const r=document.createRange();r.selectNodeContents(o);r.collapse(false);const sl=getSelection();sl.removeAllRanges();sl.addRange(r)}
+  });
+}
+/* two-column mode */
+function layout(n){
+  const two=!!n.cols;
+  $("#editor").classList.toggle("two",two);$("#col2").hidden=!two;
+  $("#fmt-cols").setAttribute("aria-pressed",String(two));
+  ed.dataset.ph=two?"what the video says…":"write anything. add #tags anywhere.";
+  ed.setAttribute("aria-label",two?"Facts":"Note");
+}
+$("#fmt-cols").addEventListener("click",()=>{
   const n=S.book.notes[S.open];if(!n)return;
-  if(ed.innerHTML==="<br>"||ed.innerHTML==="<div><br></div>")ed.innerHTML="";
-  n.html=ed.innerHTML;n.body=ed.innerText.replace(/\n{3,}/g,"\n\n");changed(n);
+  n.cols=!n.cols;changed(n);layout(n);
+  (n.cols?ed2:ed).focus();
 });
-/* paste as plain text so outside formatting doesn't sneak in */
-ed.addEventListener("paste",e=>{e.preventDefault();const t=(e.clipboardData||window.clipboardData).getData("text/plain");document.execCommand("insertText",false,t)});
 $("#folder").addEventListener("change",e=>{const n=S.book.notes[S.open];n.folder=e.target.value;changed(n);fill()});
 
 /* bold / italic */
-function fmt(cmd){ed.focus();document.execCommand(cmd,false,null);ed.dispatchEvent(new Event("input"));states()}
+function fmt(cmd){const el=lastEd;el.focus();document.execCommand(cmd,false,null);el.dispatchEvent(new Event("input"));states()}
 for(const[id,cmd]of[["#fmt-b","bold"],["#fmt-i","italic"]]){
   const b=$(id);b.addEventListener("mousedown",e=>e.preventDefault());b.addEventListener("click",()=>fmt(cmd));
 }
 function states(){
-  if(!ed.contains(document.getSelection().anchorNode))return;
+  const a=document.getSelection().anchorNode;if(!ed.contains(a)&&!ed2.contains(a))return;
   try{$("#fmt-b").setAttribute("aria-pressed",String(document.queryCommandState("bold")));$("#fmt-i").setAttribute("aria-pressed",String(document.queryCommandState("italic")))}catch{}
 }
 document.addEventListener("selectionchange",states);
