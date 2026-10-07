@@ -135,6 +135,13 @@ button{cursor:pointer;background:none;border:0;padding:0}
 .blank{flex:1;display:grid;place-items:center;color:var(--muted);font:14px var(--mono);text-align:center;padding:24px}
 .back{display:none}
 
+/* links as small icon chips */
+a.lnk{display:inline-flex;align-items:center;gap:4px;max-width:100%;padding:0 8px 0 6px;border-radius:999px;background:var(--side);border:1px solid var(--line);color:var(--muted);font:12px/1.65 var(--mono);text-decoration:none;vertical-align:1px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+a.lnk:hover{color:var(--ink);border-color:var(--muted)}
+a.lnk::before{content:"";flex:none;width:12px;height:12px;background:currentColor;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7'/%3E%3Cpath d='M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7'/%3E%3Cpath d='M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7'/%3E%3C/svg%3E") center/contain no-repeat}
+
 /* focus mode: only the note */
 @media (min-width:761px){
   body.focus .app{grid-template-columns:minmax(0,1fr)}
@@ -285,7 +292,15 @@ function normalize(book){
   (book.folders||[]).forEach((f,i)=>{if(!f.color)f.color=PASTELS[i%PASTELS.length];if(f.parent===undefined)f.parent=""});
   return book;
 }
-/* only bold, italic and line structure survive; everything else is unwrapped */
+/* links: only http(s), shown as a small chip with the site name */
+function safeUrl(u){try{const x=new URL(u);return(x.protocol==="https:"||x.protocol==="http:")?x.href:null}catch{return null}}
+function chip(u){
+  let host=u;try{host=new URL(u).hostname.replace(/^www\./,"")}catch{}
+  const a=document.createElement("a");a.className="lnk";a.href=u;a.title=u;a.target="_blank";a.rel="noopener noreferrer";
+  a.setAttribute("contenteditable","false");a.textContent=host;return a;
+}
+const URL_RE=/https?:\/\/[^\s<>"]+[^\s<>".,;:!?)\]]/g;
+/* only bold, italic, links and line structure survive; everything else is unwrapped */
 const ALLOWED=new Set(["B","STRONG","I","EM","BR","DIV","P"]);
 function clean(html){
   const t=document.createElement("template");t.innerHTML=html||"";
@@ -293,6 +308,7 @@ function clean(html){
     for(const c of [...node.childNodes]){
       if(c.nodeType===1){
         walk(c);
+        if(c.tagName==="A"){const u=safeUrl(c.getAttribute("href"));if(u){c.replaceWith(chip(u))}else c.replaceWith(...c.childNodes);continue}
         if(!ALLOWED.has(c.tagName)){c.replaceWith(...c.childNodes);continue}
         for(const a of [...c.attributes])c.removeAttribute(a.name);
       }else if(c.nodeType!==3)c.remove();
@@ -591,16 +607,56 @@ for(const[el,hk,bk]of[[ed,"html","body"],[ed2,"html2","body2"]]){
   el.addEventListener("input",()=>{
     const n=S.book.notes[S.open];if(!n)return;
     if(el.innerHTML==="<br>"||el.innerHTML==="<div><br></div>")el.innerHTML="";
-    n[hk]=el.innerHTML;n[bk]=el.innerText.replace(/\n{3,}/g,"\n\n");changed(n);
+    const urls=[...el.querySelectorAll("a.lnk")].map(a=>a.getAttribute("href"));
+    n[hk]=el.innerHTML;n[bk]=(el.innerText+(urls.length?"\n"+urls.join(" "):"")).replace(/\n{3,}/g,"\n\n");changed(n);
   });
-  /* paste as plain text so outside formatting doesn't sneak in */
-  el.addEventListener("paste",e=>{e.preventDefault();const t=(e.clipboardData||window.clipboardData).getData("text/plain");document.execCommand("insertText",false,t)});
+  /* paste as plain text; any links in it become chips */
+  el.addEventListener("paste",e=>{
+    e.preventDefault();const t=(e.clipboardData||window.clipboardData).getData("text/plain");
+    if(!URL_RE.test(t)){document.execCommand("insertText",false,t);return}
+    URL_RE.lastIndex=0;let out="",i=0,m;
+    while((m=URL_RE.exec(t))){out+=esc(t.slice(i,m.index)).replace(/\n/g,"<br>");const u=safeUrl(m[0]);i=m.index+m[0].length;out+=u?chip(u).outerHTML+(/\s/.test(t[i]||"")?"":"&nbsp;"):esc(m[0])}
+    out+=esc(t.slice(i)).replace(/\n/g,"<br>");URL_RE.lastIndex=0;
+    document.execCommand("insertHTML",false,out);
+  });
+  /* click a link chip to open it */
+  el.addEventListener("click",e=>{const a=e.target.closest("a.lnk");if(a){e.preventDefault();window.open(a.href,"_blank","noopener")}});
   el.addEventListener("focus",()=>{lastEd=el});
   /* Tab jumps to the other column */
   el.addEventListener("keydown",e=>{
+    if(e.key===" "||e.key==="Enter")linkBeforeCaret();
     const n=S.book.notes[S.open];
-    if(e.key==="Tab"&&n&&n.cols){e.preventDefault();const o=el===ed?ed2:ed;o.focus();const r=document.createRange();r.selectNodeContents(o);r.collapse(false);const sl=getSelection();sl.removeAllRanges();sl.addRange(r)}
+    if(e.key==="Tab"&&!e.ctrlKey&&!e.metaKey&&!e.altKey){e.preventDefault();e.shiftKey?outdent(el):document.execCommand("insertText",false,INDENT);return}
+    if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)&&n&&n.cols){e.preventDefault();const o=el===ed?ed2:ed;o.focus();const r=document.createRange();r.selectNodeContents(o);r.collapse(false);const sl=getSelection();sl.removeAllRanges();sl.addRange(r)}
   });
+}
+/* paragraph indent, like books: five fixed spaces (same width on every device) */
+const INDENT="\u00a0\u00a0\u00a0\u00a0\u00a0";
+function outdent(el){
+  const sel=getSelection();if(!sel.rangeCount)return;
+  let node=sel.getRangeAt(0).startContainer;
+  let block=node.nodeType===1?node:node.parentNode;
+  while(block&&block!==el&&!/^(DIV|P)$/.test(block.tagName))block=block.parentNode;
+  if(!block)return;
+  /* first text of the line */
+  const w=document.createTreeWalker(block,NodeFilter.SHOW_TEXT);let t=w.nextNode();
+  if(block===el){/* line without its own div: walk back from the caret to the previous line break */
+    t=node.nodeType===3?node:null;
+    while(t&&t.previousSibling&&t.previousSibling.nodeName!=="BR")t=t.previousSibling.nodeType===3?t.previousSibling:null;
+  }
+  if(!t||t.nodeType!==3)return;
+  const m=t.data.match(/^[\u00a0\u2003 ]{1,5}/);if(!m)return;
+  t.data=t.data.slice(m[0].length);el.dispatchEvent(new Event("input"));
+}
+/* a URL typed by hand becomes a chip when you press space or enter */
+function linkBeforeCaret(){
+  const sel=getSelection();if(!sel.rangeCount||!sel.isCollapsed)return;
+  const r=sel.getRangeAt(0),node=r.startContainer;if(node.nodeType!==3)return;
+  const m=node.data.slice(0,r.startOffset).match(/(?:^|\s)(https?:\/\/\S+)$/);if(!m)return;
+  const u=safeUrl(m[1]);if(!u)return;
+  const rr=document.createRange();rr.setStart(node,r.startOffset-m[1].length);rr.setEnd(node,r.startOffset);rr.deleteContents();
+  const a=chip(u);rr.insertNode(a);
+  const after=document.createRange();after.setStartAfter(a);after.collapse(true);sel.removeAllRanges();sel.addRange(after);
 }
 /* two-column mode */
 function layout(n){
