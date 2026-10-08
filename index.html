@@ -72,6 +72,11 @@ button{cursor:pointer;background:none;border:0;padding:0}
 .nav .tw{width:14px;flex:none;font-size:10px;line-height:1;color:var(--muted);text-align:center}
 .nav .tw:hover{color:var(--ink)}
 .nav .tagname{font-family:var(--mono);font-size:13px}
+.nav .daylbl{font-family:var(--mono);font-size:13px}
+.bydate{display:flex;align-items:center;gap:8px;width:calc(100% - 16px);margin:6px 8px 0;padding:6px 10px;border-radius:8px;font:12px var(--mono);color:var(--muted)}
+.bydate:hover{background:color-mix(in srgb,var(--ink) 6%,transparent);color:var(--ink)}
+.bydate[aria-pressed="true"]{background:color-mix(in srgb,var(--ink) 8%,transparent);color:var(--ink)}
+.bydate svg{width:14px;height:14px;flex:none}
 .dot{width:11px;height:11px;border-radius:4px;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
 .newf{padding:2px 8px 6px} .newf input{width:100%;padding:7px 10px;border:1px solid var(--ink);border-radius:8px;background:var(--paper)}
 .foot{border-top:1px solid var(--line);padding:10px 16px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;font:12px var(--mono);color:var(--muted)}
@@ -195,6 +200,8 @@ a.lnk::before{content:"";flex:none;width:12px;height:12px;background:currentColo
     <div class="scroll">
       <div class="brand"><span>alicia's notes</span></div>
       <ul class="nav" style="padding-top:10px" id="nav-main"></ul>
+      <button class="bydate" id="bydate" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>group by date</span></button>
+      <div id="days-wrap" hidden><div class="label">days</div><ul class="nav" id="nav-days"></ul></div>
       <div class="label">folders <button id="add-folder" aria-label="New folder" title="New folder">+</button></div>
       <div class="newf" id="newf" hidden><label class="sr" for="nf">Folder name</label><input id="nf" placeholder="folder name" maxlength="40"></div>
       <ul class="nav" id="nav-folders"></ul>
@@ -263,7 +270,7 @@ const $=s=>document.querySelector(s);
 const te=new TextEncoder(), td=new TextDecoder();
 let CFG=load(CFG_KEY);
 const S={key:null,salt:null,check:null,book:null,sha:null,pending:null,remote:null,
-  sel:"all",open:null,q:"",dirty:false,syncing:false,again:false,timer:null,confirm:false,fedit:null,collapsed:new Set(load("notas.collapsed")||[])};
+  sel:"all",open:null,q:"",dirty:false,syncing:false,again:false,timer:null,confirm:false,fedit:null,collapsed:new Set(load("notas.collapsed")||[]),byDate:!!load("notas.bydate")};
 
 /* helpers */
 function load(k){try{return JSON.parse(localStorage.getItem(k))}catch{return null}}
@@ -273,6 +280,17 @@ const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"
 const uid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const tFmt=new Intl.DateTimeFormat(undefined,{hour:"2-digit",minute:"2-digit"});
 const dFmt=new Intl.DateTimeFormat(undefined,{day:"numeric",month:"short"});
+const dayFmt=new Intl.DateTimeFormat(undefined,{weekday:"short",day:"numeric",month:"short"});
+const dayFmtY=new Intl.DateTimeFormat(undefined,{weekday:"short",day:"numeric",month:"short",year:"numeric"});
+/* the day a note belongs to: the day it was created, in local time */
+function dayKey(t){const d=new Date(t);return"d:"+d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+const noteDay=n=>dayKey(n.createdAt||n.updatedAt);
+function dayName(key){
+  const[y,m,d]=key.slice(2).split("-").map(Number),dt=new Date(y,m-1,d),now=new Date();
+  if(key===dayKey(now))return"today";
+  const yd=new Date(now);yd.setDate(now.getDate()-1);if(key===dayKey(yd))return"yesterday";
+  return(y===now.getFullYear()?dayFmt:dayFmtY).format(dt);
+}
 const fullFmt=new Intl.DateTimeFormat(undefined,{weekday:"long",day:"numeric",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit"});
 function when(t){const d=new Date(t),n=new Date();return d.toDateString()===n.toDateString()?tFmt.format(d):dFmt.format(d)}
 const title=n=>(n.title||"").trim()||(n.body||"").trim().split("\n")[0].slice(0,80)||"new note";
@@ -489,6 +507,7 @@ function shown(){
   const q=S.q.trim().toLowerCase();
   return all().filter(n=>{
     if(S.sel.startsWith("#")){if(!tagsOf(n).includes(S.sel.slice(1)))return false}
+    else if(S.sel.startsWith("d:")){if(noteDay(n)!==S.sel)return false}
     else if(S.sel==="loose"){if(fname(n.folder))return false}
     else if(S.sel!=="all"&&n.folder!==S.sel)return false;
     return!q||((n.title||"")+" "+(n.body||"")+" "+(n.body2||"")).toLowerCase().includes(q);
@@ -505,6 +524,13 @@ function render(){
   if(!S.book)return;const ns=all();
   const main=[navItem("all","all notes",ns.length)];const loose=ns.filter(n=>!fname(n.folder)).length;if(loose)main.push(navItem("loose","no folder",loose));
   $("#nav-main").replaceChildren(...main);
+  $("#bydate").setAttribute("aria-pressed",String(S.byDate));$("#days-wrap").hidden=!S.byDate;
+  if(S.byDate){
+    const dc={};for(const n of ns){const k=noteDay(n);dc[k]=(dc[k]||0)+1}
+    const days=Object.keys(dc).sort().reverse();
+    $("#nav-days").replaceChildren(...(days.length?days.map(k=>navItem(k,dayName(k),dc[k],{cls:"daylbl"})):[h("li",{class:"small",style:"padding:4px 18px"},"no notes yet")]));
+    if(S.sel.startsWith("d:")&&!dc[S.sel])S.sel="all";
+  }else if(S.sel.startsWith("d:"))S.sel="all";
   const rows=[];let hideBelow=null;
   for(const{f,d}of tree()){
     if(hideBelow!==null&&d>hideBelow)continue;hideBelow=null;
@@ -517,7 +543,7 @@ function render(){
   const tags=Object.keys(tc).sort();
   $("#nav-tags").replaceChildren(...(tags.length?tags.map(t=>navItem("#"+t,"#"+t,tc[t],{cls:"tagname"})):[h("li",{class:"small",style:"padding:4px 18px"},"type #something in a note")]));
   if(S.sel.startsWith("#")&&!tc[S.sel.slice(1)])S.sel="all";
-  $("#list-name").textContent=S.sel==="all"?"all notes":S.sel==="loose"?"no folder":S.sel.startsWith("#")?S.sel:(path(S.sel)||"folder");
+  $("#list-name").textContent=S.sel==="all"?"all notes":S.sel.startsWith("d:")?dayName(S.sel):S.sel==="loose"?"no folder":S.sel.startsWith("#")?S.sel:(path(S.sel)||"folder");
   const list=shown();$("#list-count").textContent=list.length;
   tools();
   $("#notes").replaceChildren(...(list.length?list.map(n=>{
@@ -574,6 +600,7 @@ $("#nf").addEventListener("keydown",e=>{
   const v=e.target.value.trim();if(!v)return;
   $("#newf").hidden=true;addFolder(v,"");
 });
+$("#bydate").addEventListener("click",()=>{S.byDate=!S.byDate;store("notas.bydate",S.byDate);render()});
 $("#q").addEventListener("input",e=>{S.q=e.target.value;render()});
 
 /* notes */
@@ -583,7 +610,7 @@ try{document.execCommand("defaultParagraphSeparator",false,"div");document.execC
 $("#new").onclick=()=>{
   const t=Date.now(),tag=S.sel.startsWith("#")?S.sel:"";
   const n={id:uid("n"),title:"",body:tag,html:esc(tag),folder:folderOf(S.sel)?S.sel:"",createdAt:t,updatedAt:t};
-  S.book.notes[n.id]=n;S.q="";$("#q").value="";openNote(n.id);ti.focus();
+  S.book.notes[n.id]=n;S.q="";$("#q").value="";if(S.sel.startsWith("d:"))S.sel=dayKey(t);openNote(n.id);ti.focus();
 };
 function openNote(id){if(S.open&&S.open!==id)dropEmpty(S.open);S.open=id;S.confirm=false;$("#blank").hidden=true;$("#editor").hidden=false;fill();render();view("text");$("#sheet").scrollTop=0}
 function close(){S.open=null;$("#editor").hidden=true;$("#blank").hidden=false;if(document.body.classList.contains("focus"))setFocus(false)}
